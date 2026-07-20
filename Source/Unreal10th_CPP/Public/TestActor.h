@@ -11,6 +11,10 @@
 //UCLASS()
 // - C++ 클래스를 언리얼 엔진의 객체 시스템에 등록(= UObject)
 // - 가비지 콜렉팅 지원, 블루프린트 연동, 에디터서 노출등이 가능해짐
+// - 다중 상속을 막는다.
+
+// CDO (Class Default Object)
+//  - 기본클래스 인스턴스. 새 클래스가 인스턴싱될때 CDO를 클로닝 해서 사용.
 
 UCLASS()
 class UNREAL10TH_CPP_API ATestActor : public AActor
@@ -25,8 +29,60 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	virtual void Tick(float DeltaTime) override;	//틱을 protected로 변경
 
+
+	void Test_NormalFunction();
+
+	UFUNCTION(BlueprintCallable)	//C++로 작성한 함수를 블루프린트에서 호출할 수 있다.
+	void Test_UFunction();
+
+	UFUNCTION(BlueprintImplementableEvent)	//C++에서 선언만 하고 구현은 블루프린트에서 하겠다.
+	void Test_ImplmentableFunction();	//블루프린트 코드를 써야만 하는 상황일 때 사용. CPP에 구현하면 안됨.
+
+	UFUNCTION(BlueprintNativeEvent)		//C++에서 선언과 구현을 했는데 블루프린트에서 재정의 할 수도 있다.
+	void Test_NativeEventFunction();	//(구현은 _Implementation을 뒤에 붙여서 구현. 호출은 원래 이름 그대로.)
+
+
+
+protected:
+	int32 Data1 = 10;	//C++ 전용 변수.
+
+	// UPROPERTY : 클래스나 구조체의 멤버 변수를 언리얼 엔진에 등록하는 것(리플렉션 지원, 가비지 콜렉팅 지원)
+	UPROPERTY(VisibleAnywhere, Category = "TestActor변수|Visible")	//클래스 디폴트 창과 맵에 배치된 액터의 디테일 창에서 확인 가능
+	int32 Data2_1 = 201;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "TestActor변수|Visible")	//클래스 디폴트 창에서만 보임
+	int32 Data2_2 = 202;
+
+	UPROPERTY(VisibleInstanceOnly, Category = "TestActor변수|Visible")	//맵에 배치된 액터의 디테일 창에서만 보임
+	int32 Data2_3 = 203;
+
+	UPROPERTY(EditAnywhere, Category = "TestActor변수|Editable")	//클래스 디폴트 창과 맵에 배치된 액터의 디테일 창에서 수정 가능
+	int32 Data3_1 = 301;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TestActor변수|Editable")	//클래스 디폴트 창에서만 수정 가능
+	int32 Data3_2 = 302;
+
+	UPROPERTY(EditInstanceOnly, Category = "TestActor변수|Editable")	//맵에 배치된 액터의 디테일 창에서만 수정 가능
+	int32 Data3_3 = 303;
+
+	UPROPERTY(BlueprintReadOnly, Category = "TestActor변수|Read")	//블루프린트 이벤트 그래프에서 읽을 수 있다.
+	int32 Data4_1 = 401;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "TestActor변수|Read")	//블루프린트 이벤트 그래프에서 읽을 수 있고 디테일 창에서 편집도 가능.
+	int32 Data4_2 = 402;
+
+	UPROPERTY(BlueprintReadWrite, Category = "TestActor변수|ReadWrite")	//블루프린트 이벤트 그래프에서 읽고 쓸 수 있다.
+	int32 Data4_3 = 403;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "TestActor변수|ReadWrite")	//블루프린트 이벤트 그래프에서 읽고 쓸 수 있다. 그리고 디테일 창에서 편집도 가능.
+	int32 Data4_4 = 404;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UStaticMeshComponent>MainMesh = nullptr;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	float MoveSpeed = 10.0f;
 };
