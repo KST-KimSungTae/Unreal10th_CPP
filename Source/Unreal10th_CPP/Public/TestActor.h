@@ -84,5 +84,5 @@ protected:
 	TObjectPtr<UStaticMeshComponent>MainMesh = nullptr;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	float MoveSpeed = 10.0f;
+	float MoveSpeed = 50.0f;
 };
