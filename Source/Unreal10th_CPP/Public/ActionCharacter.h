@@ -9,6 +9,8 @@
 
 
 class UInputAction;
+class USpringArmComponent;
+class UCameraComponent;
 
 UCLASS()
 class UNREAL10TH_CPP_API AActionCharacter : public ACharacter
@@ -30,10 +32,36 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+
 protected:
 	void OnTestAction(const FInputActionValue& Value);
 
 protected:
+	void OnMoveAction(const FInputActionValue& Value);
+
+protected:
+	void OnBoostAction(const FInputActionValue& Value);
+
+protected:
+	void OnBoostEnd(const FInputActionValue& Value);
+
+protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UInputAction>IA_Test;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UInputAction>IA_Move;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UInputAction>IA_Boost;
+
+protected:
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+	TObjectPtr<USpringArmComponent> CameraSpringArmComponent = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UCameraComponent> CameraComponent = nullptr;
+
 };
