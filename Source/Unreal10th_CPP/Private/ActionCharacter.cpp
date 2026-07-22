@@ -3,6 +3,7 @@
 
 #include "ActionCharacter.h"
 #include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
@@ -63,18 +64,36 @@ void AActionCharacter::OnTestAction(const FInputActionValue& Value)
 
 void AActionCharacter::OnMoveAction(const FInputActionValue& Value)
 {
-	FRotator Rotator = GetControlRotation();
-	FRotator Rotator_Yaw(0,Rotator.Yaw,0);
-
 
 	FVector2D MoveAxis = Value.Get<FVector2D>();
 
-	// 그 방향 기준 앞쪽 / 오른쪽 벡터
-	FVector Forward = FRotationMatrix(Rotator_Yaw).GetScaledAxis(EAxis::X);                         // 앞 방향
-	FVector Right = FRotationMatrix(Rotator_Yaw).GetScaledAxis(EAxis::Y);  // 오른쪽 방향
+	FVector WorldDirection = FVector(MoveAxis.X, MoveAxis.Y, 0).GetSafeNormal();
 
-	AddMovementInput(Forward, MoveAxis.Y);  // W/S
-	AddMovementInput(Right, MoveAxis.X);  // A/D
+	//카메라의 Yaw회전각(Degree)를 Radian으로 변경
+	float YawRadian = FMath::DegreesToRadians(GetControlRotation().Yaw);
+
+	//좌우 회전만 할꺼라 UPVector를 기준축으로 Yaw회전각 만큼 돌리는 회전 만들기
+	FQuat ControlYawRoation(FVector::UpVector, YawRadian);
+
+	//입력된 방향에 회전 적용(=카메라 Yaw회전 만큼 입력 방향을 회전 시키기)
+	WorldDirection = ControlYawRoation.RotateVector(WorldDirection);
+
+	AddMovementInput(WorldDirection);
+
+	UE_LOG(LogTemp, Log, TEXT("(%.1f,%.1f)"), WorldDirection.X, WorldDirection.Y);
+
+
+	//FRotator Rotator = GetControlRotation();
+	//FRotator Rotator_Yaw(0,Rotator.Yaw,0);
+
+	//// 그 방향 기준 앞쪽 / 오른쪽 벡터
+	//FVector Forward = FRotationMatrix(Rotator_Yaw).GetScaledAxis(EAxis::X);                         // 앞 방향
+	//FVector Right = FRotationMatrix(Rotator_Yaw).GetScaledAxis(EAxis::Y);  // 오른쪽 방향
+
+	//AddMovementInput(Forward, MoveAxis.Y);  // W/S
+	//AddMovementInput(Right, MoveAxis.X);  // A/D
+
+	//UE_LOG(LogTemp, Log, TEXT("(%.1f,%.1f)"), MoveAxis.X, MoveAxis.Y);
 
 
 
