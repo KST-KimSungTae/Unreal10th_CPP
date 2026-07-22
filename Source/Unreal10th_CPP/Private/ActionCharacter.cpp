@@ -33,6 +33,10 @@ void AActionCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if (GetMesh())
+	{
+		AnimInstance = GetMesh()->GetAnimInstance();
+	}
 }
 
 // Called every frame
@@ -50,9 +54,13 @@ void AActionCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		EnhancedInputComponent->BindAction(IA_Test, ETriggerEvent::Started, this, &AActionCharacter::OnTestAction);
+
 		EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &AActionCharacter::OnMoveAction);
+
 		EnhancedInputComponent->BindAction(IA_Boost, ETriggerEvent::Triggered, this, &AActionCharacter::OnBoostAction);
 		EnhancedInputComponent->BindAction(IA_Boost, ETriggerEvent::Completed, this, &AActionCharacter::OnBoostEnd);
+
+		EnhancedInputComponent->BindAction(IA_Roll, ETriggerEvent::Started, this, &AActionCharacter::OnRollAction);
 	}
 }
 
@@ -95,9 +103,6 @@ void AActionCharacter::OnMoveAction(const FInputActionValue& Value)
 
 	//UE_LOG(LogTemp, Log, TEXT("(%.1f,%.1f)"), MoveAxis.X, MoveAxis.Y);
 
-
-
-
 }
 
 void AActionCharacter::OnBoostAction(const FInputActionValue& Value)
@@ -108,5 +113,29 @@ void AActionCharacter::OnBoostAction(const FInputActionValue& Value)
 void AActionCharacter::OnBoostEnd(const FInputActionValue& Value)
 {
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
+}
+
+void AActionCharacter::OnRollAction(const FInputActionValue& Value)
+{
+	//UE_LOG(LogTemp, Log, TEXT("OnRollAction"));
+	if (!RollMontage.IsValid())return;
+	//UE_LOG(LogTemp, Log, TEXT("OnRollAction - MontageValid"));
+
+
+	if (!AnimInstance)
+	{
+		AnimInstance = GetMesh()->GetAnimInstance();
+	}
+
+	if (AnimInstance && !AnimInstance->IsAnyMontagePlaying())
+	{
+		if (!GetLastMovementInputVector().IsNearlyZero())	//이동 입력 중이면
+		{
+			SetActorRotation(GetLastMovementInputVector().Rotation());	//입력방향으로 즉신 회전해서 구르기
+		}
+
+		PlayAnimMontage(RollMontage.Get());
+	}
+	
 }
 

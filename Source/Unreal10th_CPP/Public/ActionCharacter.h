@@ -36,26 +36,29 @@ public:
 protected:
 	void OnTestAction(const FInputActionValue& Value);
 
-protected:
 	void OnMoveAction(const FInputActionValue& Value);
 
-protected:
 	void OnBoostAction(const FInputActionValue& Value);
 
-protected:
 	void OnBoostEnd(const FInputActionValue& Value);
+
+	void OnRollAction(const FInputActionValue& Value);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UInputAction>IA_Test;
 
-protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UInputAction>IA_Move;
 
-protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UInputAction>IA_Boost;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UInputAction>IA_Roll;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly)
+	TWeakObjectPtr<UAnimMontage> RollMontage;
 
 protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
@@ -63,5 +66,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UCameraComponent> CameraComponent = nullptr;
+
+private:
+	UPROPERTY()
+	TObjectPtr<UAnimInstance> AnimInstance = nullptr;
 
 };
