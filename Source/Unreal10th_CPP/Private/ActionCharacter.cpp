@@ -41,15 +41,16 @@ bool AActionCharacter::ConsumeStamina_Implementation(float InAmount)
 		CurrentStamina -= InAmount;
 		bResult = true;
 	}
+	StaminaAutoRecoveryTimer = StaminaRecoveryCoolTime;
 
-	UE_LOG(LogTemp, Log, TEXT("현재 Stamina : %.1f"), CurrentStamina);
+	UE_LOG(LogTemp, Log, TEXT("현재 Stamina : %.1f/ %.1f"), CurrentStamina,MaxStamina);
 	return bResult;
 }
 
 void AActionCharacter::RecoveryStamina_Implementation(float InAmount)
 {
 	CurrentStamina = FMath::Clamp(CurrentStamina + InAmount, 0.0f, MaxStamina);
-	UE_LOG(LogTemp, Log, TEXT("현재 Stamina : %.1f"), CurrentStamina);
+	UE_LOG(LogTemp, Log, TEXT("현재 Stamina : %.1f/ %.1f"), CurrentStamina, MaxStamina);
 }
 
 // Called when the game starts or when spawned
@@ -73,6 +74,31 @@ void AActionCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	SpendSprintStamina(DeltaTime);
+	StaminaAutoRecovery(DeltaTime);
+}
+
+void AActionCharacter::StaminaAutoRecovery(float DeltaTime)
+{
+	StaminaAutoRecoveryTimer -= DeltaTime;
+	if (StaminaAutoRecoveryTimer < 0.0f)
+	{
+		IStaminaInterface::Execute_RecoveryStamina(this, StaminaAutoRecoveryPerSec * DeltaTime);
+	}
+}
+
+void AActionCharacter::SpendSprintStamina(float DeltaTime)
+{
+	//달리기 모드이고, 이동하고 있고, 몽타주 재생중이 아니면
+	if (bSprintMode && !GetVelocity().IsNearlyZero() &&
+		(AnimInstance && !AnimInstance->IsAnyMontagePlaying()))
+	{
+		if (!IStaminaInterface::Execute_ConsumeStamina(this, SprintStaminaCostPerSec * DeltaTime))
+		{
+			OnBoostEnd();
+			UE_LOG(LogTemp, Log, TEXT("부스트 끝"));
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -86,7 +112,7 @@ void AActionCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 		EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &AActionCharacter::OnMoveAction);
 
-		EnhancedInputComponent->BindAction(IA_Boost, ETriggerEvent::Triggered, this, &AActionCharacter::OnBoostAction);
+		EnhancedInputComponent->BindAction(IA_Boost, ETriggerEvent::Started, this, &AActionCharacter::OnBoostAction);
 		EnhancedInputComponent->BindAction(IA_Boost, ETriggerEvent::Completed, this, &AActionCharacter::OnBoostEnd);
 
 		EnhancedInputComponent->BindAction(IA_Roll, ETriggerEvent::Started, this, &AActionCharacter::OnRollAction);
@@ -117,7 +143,7 @@ void AActionCharacter::OnMoveAction(const FInputActionValue& Value)
 
 	AddMovementInput(WorldDirection);
 
-	UE_LOG(LogTemp, Log, TEXT("(%.1f,%.1f)"), WorldDirection.X, WorldDirection.Y);
+	//UE_LOG(LogTemp, Log, TEXT("(%.1f,%.1f)"), WorldDirection.X, WorldDirection.Y);
 
 
 	//FRotator Rotator = GetControlRotation();
@@ -134,20 +160,22 @@ void AActionCharacter::OnMoveAction(const FInputActionValue& Value)
 
 }
 
-void AActionCharacter::OnBoostAction(const FInputActionValue& Value)
+void AActionCharacter::OnBoostAction()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 1200.f;
+	bSprintMode = true;
 }
 
-void AActionCharacter::OnBoostEnd(const FInputActionValue& Value)
+void AActionCharacter::OnBoostEnd()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
+	bSprintMode = false;
 }
 
 void AActionCharacter::OnRollAction(const FInputActionValue& Value)
 {
 	//UE_LOG(LogTemp, Log, TEXT("OnRollAction"));
-	if (!RollMontage.IsValid())return;
+	if (!RollMontage)return;
 	//UE_LOG(LogTemp, Log, TEXT("OnRollAction - MontageValid"));
 
 
@@ -156,15 +184,17 @@ void AActionCharacter::OnRollAction(const FInputActionValue& Value)
 		AnimInstance = GetMesh()->GetAnimInstance();
 	}
 
-	if (AnimInstance && !AnimInstance->IsAnyMontagePlaying())
+	if (IStaminaInterface::Execute_ConsumeStamina(this, RollStaminaCost))	//스테미너 소비 시도 후 소비되면 구르기 실행.
 	{
-		if (!GetLastMovementInputVector().IsNearlyZero())	//이동 입력 중이면
+		if (AnimInstance && !AnimInstance->IsAnyMontagePlaying())
 		{
-			SetActorRotation(GetLastMovementInputVector().Rotation());	//입력방향으로 즉신 회전해서 구르기
-		}
+			if (!GetLastMovementInputVector().IsNearlyZero())	//이동 입력 중이면
+			{
+				SetActorRotation(GetLastMovementInputVector().Rotation());	//입력방향으로 즉신 회전해서 구르기
+			}
 
-		PlayAnimMontage(RollMontage.Get());
+			PlayAnimMontage(RollMontage.Get());
+		}
 	}
-	
 }
 

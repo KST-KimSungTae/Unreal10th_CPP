@@ -36,6 +36,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -45,11 +47,16 @@ protected:
 
 	void OnMoveAction(const FInputActionValue& Value);
 
-	void OnBoostAction(const FInputActionValue& Value);
+	void OnBoostAction();
 
-	void OnBoostEnd(const FInputActionValue& Value);
+	void OnBoostEnd();
 
 	void OnRollAction(const FInputActionValue& Value);
+
+private:
+	void SpendSprintStamina(float DeltaTime);
+
+	void StaminaAutoRecovery(float DeltaTime);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -65,13 +72,29 @@ protected:
 	TObjectPtr<UInputAction>IA_Roll;
 
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly)
-	TWeakObjectPtr<UAnimMontage> RollMontage;
+	TObjectPtr<UAnimMontage> RollMontage;
 
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
 	float CurrentStamina = 100.0f;
 
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
 	float MaxStamina = 100.0f;
+
+	//구르기에 필요한 스태미너 코스트
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
+	float RollStaminaCost = 30.0f;
+
+	//달리기에 필요한 초당 스태미너 코스트
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
+	float SprintStaminaCostPerSec = 2.0f;
+
+	//스태미너 사용 후 자동 회복에 걸리는 시간
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
+	float StaminaRecoveryCoolTime = 3.0f;
+
+	// 스태미너가 자동 회복 될 떄 초당 회복량
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
+	float StaminaAutoRecoveryPerSec = 10.0f;
 
 protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
@@ -84,4 +107,7 @@ private:
 	UPROPERTY()
 	TObjectPtr<UAnimInstance> AnimInstance = nullptr;
 
+	bool bSprintMode = false;
+
+	float StaminaAutoRecoveryTimer = 0.0f;
 };
