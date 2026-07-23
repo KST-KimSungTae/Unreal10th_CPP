@@ -56,6 +56,8 @@ protected:
 private:
 	void SpendSprintStamina(float DeltaTime);
 
+	void StaminaAutoRecoveryTimer();
+
 	void StaminaAutoRecovery(float DeltaTime);
 
 protected:
@@ -96,6 +98,15 @@ protected:
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
 	float StaminaAutoRecoveryPerSec = 10.0f;
 
+	// 스태미너가 자동 회복 될 떄 타이머 틱당 회복량
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
+	float StaminaAutoRecoveryPerTick = 1.0f;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
+	float StaminaAutoRecoveryInterval = 0.1f;
+
+
+
 protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	TObjectPtr<USpringArmComponent> CameraSpringArmComponent = nullptr;
@@ -103,11 +114,15 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UCameraComponent> CameraComponent = nullptr;
 
+
+
 private:
 	UPROPERTY()
 	TObjectPtr<UAnimInstance> AnimInstance = nullptr;
 
 	bool bSprintMode = false;
 
-	float StaminaAutoRecoveryTimer = 0.0f;
+	float StaminaAutoRecoverySecond = 0.0f;
+
+	FTimerHandle StaminaAutoRecoveryTimerHandle;
 };

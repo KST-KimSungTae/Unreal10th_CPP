@@ -39,9 +39,22 @@ bool AActionCharacter::ConsumeStamina_Implementation(float InAmount)
 	if (CurrentStamina >= InAmount)
 	{
 		CurrentStamina -= InAmount;
+
+		//StaminaAutoRecoverySecond = StaminaRecoveryCoolTime;
+
+		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+
+		TimerManager.SetTimer(
+			StaminaAutoRecoveryTimerHandle,
+			this,
+			&AActionCharacter::StaminaAutoRecoveryTimer,
+			StaminaAutoRecoveryInterval,
+			true,
+			StaminaRecoveryCoolTime
+		);
+
 		bResult = true;
 	}
-	StaminaAutoRecoveryTimer = StaminaRecoveryCoolTime;
 
 	UE_LOG(LogTemp, Log, TEXT("현재 Stamina : %.1f/ %.1f"), CurrentStamina,MaxStamina);
 	return bResult;
@@ -51,6 +64,12 @@ void AActionCharacter::RecoveryStamina_Implementation(float InAmount)
 {
 	CurrentStamina = FMath::Clamp(CurrentStamina + InAmount, 0.0f, MaxStamina);
 	UE_LOG(LogTemp, Log, TEXT("현재 Stamina : %.1f/ %.1f"), CurrentStamina, MaxStamina);
+	//FMath::IsNearlyEqual(CurrentStamina, MaxStamina);
+	if (CurrentStamina >= MaxStamina)
+	{
+		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+		TimerManager.ClearTimer(StaminaAutoRecoveryTimerHandle);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -75,17 +94,19 @@ void AActionCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	SpendSprintStamina(DeltaTime);
-	StaminaAutoRecovery(DeltaTime);
+	//StaminaAutoRecovery(DeltaTime);
 }
-
+//타이머로 대체해서 더 이상 안 씀
 void AActionCharacter::StaminaAutoRecovery(float DeltaTime)
 {
-	StaminaAutoRecoveryTimer -= DeltaTime;
-	if (StaminaAutoRecoveryTimer < 0.0f)
+	StaminaAutoRecoverySecond -= DeltaTime;
+	if (StaminaAutoRecoverySecond < 0.0f)
 	{
 		IStaminaInterface::Execute_RecoveryStamina(this, StaminaAutoRecoveryPerSec * DeltaTime);
 	}
+
 }
+
 
 void AActionCharacter::SpendSprintStamina(float DeltaTime)
 {
@@ -99,6 +120,11 @@ void AActionCharacter::SpendSprintStamina(float DeltaTime)
 			UE_LOG(LogTemp, Log, TEXT("부스트 끝"));
 		}
 	}
+}
+
+void AActionCharacter::StaminaAutoRecoveryTimer()
+{
+	IStaminaInterface::Execute_RecoveryStamina(this, StaminaAutoRecoveryPerTick);
 }
 
 // Called to bind functionality to input
@@ -164,12 +190,15 @@ void AActionCharacter::OnBoostAction()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 1200.f;
 	bSprintMode = true;
+
 }
 
 void AActionCharacter::OnBoostEnd()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 	bSprintMode = false;
+
+
 }
 
 void AActionCharacter::OnRollAction(const FInputActionValue& Value)
