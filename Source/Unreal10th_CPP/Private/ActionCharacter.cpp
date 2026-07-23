@@ -7,6 +7,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
+#include "StatComponent.h"
 
 class USpringArmComponent;
 class UCameraComponent;
@@ -22,55 +23,14 @@ AActionCharacter::AActionCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("PlayerCamera"));
 	CameraComponent->SetupAttachment(CameraSpringArmComponent);
 
+	StatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("Stat"));
+
 	bUseControllerRotationYaw = false;	//컨트롤러 움직일 때 같이 회전되는 것 방지
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;	// 캐릭터 이동방향으로 바라보게 만들기
 	CameraSpringArmComponent->bUsePawnControlRotation = true;	//스프링암은 컨트롤러 입력에 맞게 회전되기
 }
 
-float AActionCharacter::GetCurrentStamina_Implementation() const
-{
-	return CurrentStamina;
-}
-
-bool AActionCharacter::ConsumeStamina_Implementation(float InAmount)
-{
-	bool bResult = false;
-	if (CurrentStamina >= InAmount)
-	{
-		CurrentStamina -= InAmount;
-
-		//StaminaAutoRecoverySecond = StaminaRecoveryCoolTime;
-
-		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-
-		TimerManager.SetTimer(
-			StaminaAutoRecoveryTimerHandle,
-			this,
-			&AActionCharacter::StaminaAutoRecoveryTimer,
-			StaminaAutoRecoveryInterval,
-			true,
-			StaminaRecoveryCoolTime
-		);
-
-		bResult = true;
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("현재 Stamina : %.1f/ %.1f"), CurrentStamina,MaxStamina);
-	return bResult;
-}
-
-void AActionCharacter::RecoveryStamina_Implementation(float InAmount)
-{
-	CurrentStamina = FMath::Clamp(CurrentStamina + InAmount, 0.0f, MaxStamina);
-	UE_LOG(LogTemp, Log, TEXT("현재 Stamina : %.1f/ %.1f"), CurrentStamina, MaxStamina);
-	//FMath::IsNearlyEqual(CurrentStamina, MaxStamina);
-	if (CurrentStamina >= MaxStamina)
-	{
-		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-		TimerManager.ClearTimer(StaminaAutoRecoveryTimerHandle);
-	}
-}
 
 // Called when the game starts or when spawned
 void AActionCharacter::BeginPlay()
@@ -81,8 +41,15 @@ void AActionCharacter::BeginPlay()
 	{
 		AnimInstance = GetMesh()->GetAnimInstance();
 	}
+	if (StatComponent)
+	{
+		FAutoRecoveryData Data = FAutoRecoveryData(
+			StaminaRecoveryCoolTime,
+			StaminaAutoRecoveryInterval,
+			StaminaAutoRecoveryPerTick);
+		StatComponent->InitializeStat(Data);
+	}
 
-	CurrentStamina = MaxStamina;
 
 	//GetCurrentStamina();	//실행했을 때 C++에 구현된 내용만 호출한다.
 	//IStaminaInterface::Execute_GetCurrentStamina(this);	//실행했을때 블루프린트 구현으로 호출한다.
@@ -96,16 +63,7 @@ void AActionCharacter::Tick(float DeltaTime)
 	SpendSprintStamina(DeltaTime);
 	//StaminaAutoRecovery(DeltaTime);
 }
-//타이머로 대체해서 더 이상 안 씀
-void AActionCharacter::StaminaAutoRecovery(float DeltaTime)
-{
-	StaminaAutoRecoverySecond -= DeltaTime;
-	if (StaminaAutoRecoverySecond < 0.0f)
-	{
-		IStaminaInterface::Execute_RecoveryStamina(this, StaminaAutoRecoveryPerSec * DeltaTime);
-	}
 
-}
 
 
 void AActionCharacter::SpendSprintStamina(float DeltaTime)
@@ -114,7 +72,7 @@ void AActionCharacter::SpendSprintStamina(float DeltaTime)
 	if (bSprintMode && !GetVelocity().IsNearlyZero() &&
 		(AnimInstance && !AnimInstance->IsAnyMontagePlaying()))
 	{
-		if (!IStaminaInterface::Execute_ConsumeStamina(this, SprintStaminaCostPerSec * DeltaTime))
+		if (!IStaminaInterface::Execute_ConsumeStamina(StatComponent, SprintStaminaCostPerSec * DeltaTime))
 		{
 			OnBoostEnd();
 			UE_LOG(LogTemp, Log, TEXT("부스트 끝"));
@@ -122,10 +80,6 @@ void AActionCharacter::SpendSprintStamina(float DeltaTime)
 	}
 }
 
-void AActionCharacter::StaminaAutoRecoveryTimer()
-{
-	IStaminaInterface::Execute_RecoveryStamina(this, StaminaAutoRecoveryPerTick);
-}
 
 // Called to bind functionality to input
 void AActionCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -213,7 +167,7 @@ void AActionCharacter::OnRollAction(const FInputActionValue& Value)
 		AnimInstance = GetMesh()->GetAnimInstance();
 	}
 
-	if (IStaminaInterface::Execute_ConsumeStamina(this, RollStaminaCost))	//스테미너 소비 시도 후 소비되면 구르기 실행.
+	if (IStaminaInterface::Execute_ConsumeStamina(StatComponent, RollStaminaCost))	//스테미너 소비 시도 후 소비되면 구르기 실행.
 	{
 		if (AnimInstance && !AnimInstance->IsAnyMontagePlaying())
 		{
