@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
-
+#include "../Interface/StatInterface.h"
 #include "ActionCharacter.generated.h"
 
 
@@ -15,7 +15,7 @@ class UCameraComponent;
 class UStatComponent;
 
 UCLASS()
-class UNREAL10TH_CPP_API AActionCharacter : public ACharacter
+class UNREAL10TH_CPP_API AActionCharacter : public ACharacter, public IStatInterface
 {
 	GENERATED_BODY()
 
@@ -37,6 +37,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual UStatComponent* GetStatComponent_Implementation() const override;
 
 protected:
 	void OnTestAction(const FInputActionValue& Value);

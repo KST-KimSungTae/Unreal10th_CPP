@@ -81,7 +81,7 @@ void UStatComponent::Damaged_Implementation(float InAmount)
 
 void UStatComponent::RecoveryHealth_Implementation(float InAmount)
 {
-	CurrentStamina = FMath::Clamp(CurrentHealth + InAmount, 0.0f, MaxHealth);
+	CurrentHealth = FMath::Clamp(CurrentHealth + InAmount, 0.0f, MaxHealth);
 
 	UE_LOG(LogTemp, Log, TEXT("현재 Health : %.1f/ %.1f"), CurrentHealth, MaxHealth);
 }

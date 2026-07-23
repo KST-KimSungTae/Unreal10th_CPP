@@ -65,22 +65,6 @@ void AActionCharacter::Tick(float DeltaTime)
 }
 
 
-
-void AActionCharacter::SpendSprintStamina(float DeltaTime)
-{
-	//달리기 모드이고, 이동하고 있고, 몽타주 재생중이 아니면
-	if (bSprintMode && !GetVelocity().IsNearlyZero() &&
-		(AnimInstance && !AnimInstance->IsAnyMontagePlaying()))
-	{
-		if (!IStaminaInterface::Execute_ConsumeStamina(StatComponent, SprintStaminaCostPerSec * DeltaTime))
-		{
-			OnBoostEnd();
-			UE_LOG(LogTemp, Log, TEXT("부스트 끝"));
-		}
-	}
-}
-
-
 // Called to bind functionality to input
 void AActionCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -98,6 +82,12 @@ void AActionCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(IA_Roll, ETriggerEvent::Started, this, &AActionCharacter::OnRollAction);
 	}
 }
+
+UStatComponent* AActionCharacter::GetStatComponent_Implementation() const
+{
+	return StatComponent.Get();
+}
+
 
 void AActionCharacter::OnTestAction(const FInputActionValue& Value)
 {
@@ -181,3 +171,16 @@ void AActionCharacter::OnRollAction(const FInputActionValue& Value)
 	}
 }
 
+void AActionCharacter::SpendSprintStamina(float DeltaTime)
+{
+	//달리기 모드이고, 이동하고 있고, 몽타주 재생중이 아니면
+	if (bSprintMode && !GetVelocity().IsNearlyZero() &&
+		(AnimInstance && !AnimInstance->IsAnyMontagePlaying()))
+	{
+		if (!IStaminaInterface::Execute_ConsumeStamina(StatComponent, SprintStaminaCostPerSec * DeltaTime))
+		{
+			OnBoostEnd();
+			UE_LOG(LogTemp, Log, TEXT("부스트 끝"));
+		}
+	}
+}

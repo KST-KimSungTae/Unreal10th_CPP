@@ -8,6 +8,7 @@
 #include "../Interface/StatInterface.h"
 #include "StatComponent.generated.h"
 
+class UStatComponent;
 
 struct FAutoRecoveryData
 {
