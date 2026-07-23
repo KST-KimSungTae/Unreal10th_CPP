@@ -16,6 +16,7 @@ UStatComponent::UStatComponent()
 void UStatComponent::InitializeStat(FAutoRecoveryData& InData)
 {
 	CurrentStamina = MaxStamina;
+	CurrentHealth = MaxHealth;
 	StaminaRecoveryData = InData;
 }
 
@@ -61,6 +62,28 @@ void UStatComponent::RecoveryStamina_Implementation(float InAmount)
 		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 		TimerManager.ClearTimer(StaminaAutoRecoveryTimerHandle);
 	}
+}
+
+float UStatComponent::GetCurrentHealth_Implementation() const
+{
+	return CurrentHealth;
+}
+
+void UStatComponent::Damaged_Implementation(float InAmount)
+{
+	if (CurrentHealth >= InAmount)
+	{
+		CurrentHealth -= InAmount;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("현재 Health : %.1f/ %.1f"), CurrentHealth, MaxHealth);
+}
+
+void UStatComponent::RecoveryHealth_Implementation(float InAmount)
+{
+	CurrentStamina = FMath::Clamp(CurrentHealth + InAmount, 0.0f, MaxHealth);
+
+	UE_LOG(LogTemp, Log, TEXT("현재 Health : %.1f/ %.1f"), CurrentHealth, MaxHealth);
 }
 
 

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "../Interface/StaminaInterface.h"
+#include "../Interface/StatInterface.h"
 #include "StatComponent.generated.h"
 
 
@@ -21,8 +22,9 @@ struct FAutoRecoveryData
 	};
 };
 
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class UNREAL10TH_CPP_API UStatComponent : public UActorComponent, public IStaminaInterface
+class UNREAL10TH_CPP_API UStatComponent : public UActorComponent, public IStaminaInterface, public IStatInterface
 {
 	GENERATED_BODY()
 
@@ -37,6 +39,11 @@ public:
 
 	virtual void RecoveryStamina_Implementation(float InAmount) override;
 
+	virtual float GetCurrentHealth_Implementation() const override;
+
+	virtual void Damaged_Implementation(float InAmount) override;
+
+	virtual void RecoveryHealth_Implementation(float InAmount) override;
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -58,6 +65,12 @@ protected:
 
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
 	float MaxStamina = 100.0f;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
+	float CurrentHealth = 200.0f;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
+	float MaxHealth = 200.0f;
 
 private:
 	//DEPRECATED : 틱에서 타이머로 변경되며 사용 안함
