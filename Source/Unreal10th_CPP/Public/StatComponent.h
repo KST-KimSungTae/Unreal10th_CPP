@@ -8,7 +8,35 @@
 #include "../Interface/StatInterface.h"
 #include "StatComponent.generated.h"
 
+
+//DECLARE_DELEGATE(FNormal);			//함수 포인터 사용. 빠르다.
+//DECLARE_DYNAMIC_DELEGATE(FDynamic);	//리플렉션 시스템 사용(문자열을 키로 하는 테이블). 느리다.
+//
+//DECLARE_MULTICAST_DELEGATE(FMulticast);	//바인딩 시킬 함수를 여러개 저장 할 수 있다.
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDynamicMulticast);
+//
+//DECLARE_MULTICAST_DELEGATE_TwoParams(FMulticast2Param, int, float);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDynamicMulti1Param, int, Data);
+//
+//DECLARE_DELEGATE_RetVal(int, FNormalReturn);	//리턴을 int로 하는 델리게이트
+//DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(float, FDynamicReturn, int, Data);	//리턴이 float이고 파라메터가 int Data인
+//
+////DYNAMIC 델리게이트에 바인딩 하는 함수는 UFUNCTION이 반드시 붙어 있어햐 한다.
+////람다식 사용도 불가
+//
+////Event
+//// -델리게이트와 거의 같음
+//// -기본적으로 멀티캐스트(리스너가 여러명)
+//// -리턴값이 무조건 없다.
+//// -클래스 밖에서 호출을 할 수 없다.
+//// -C++ 전용
+//DECLARE_EVENT(AActor, FTestEvent);
+
 class UStatComponent;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStatEmpty);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStatChange, float,Current,float,Max);
+
 
 struct FAutoRecoveryData
 {
@@ -34,17 +62,29 @@ public:
 	UStatComponent();
 
 	void InitializeStat(FAutoRecoveryData& InData);
+
 	virtual float GetCurrentStamina_Implementation() const override;
-
+	virtual float GetMaxStamina_Implementation() const override;
 	virtual bool ConsumeStamina_Implementation(float InAmount) override;
-
 	virtual void RecoveryStamina_Implementation(float InAmount) override;
 
 	virtual float GetCurrentHealth_Implementation() const override;
-
+	virtual float GetMaxHealth_Implementation() const override;
 	virtual void Damaged_Implementation(float InAmount) override;
-
 	virtual void RecoveryHealth_Implementation(float InAmount) override;
+
+public:
+	UPROPERTY(BlueprintAssignable, Category = "Stat|Stamina")
+	FOnStatEmpty OnStaminaEmpty;
+
+	UPROPERTY(BlueprintAssignable, Category = "Stat|Stamina")
+	FOnStatEmpty OnDie;
+
+	UPROPERTY(BlueprintAssignable, Category = "Stat|Health")
+	FOnStatChange OnStaminaChange;
+
+	UPROPERTY(BlueprintAssignable, Category = "Stat|Health")
+	FOnStatChange OnHealthChange;
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

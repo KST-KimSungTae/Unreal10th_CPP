@@ -6,6 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "StatComponent.h"
 #include "../Interface/StaminaInterface.h"
+#include "../Interface/StatInterface.h"
 
 // Sets default values
 APickUpActor::APickUpActor()
@@ -38,9 +39,43 @@ void APickUpActor::Tick(float DeltaTime)
 
 void APickUpActor::NotifyActorBeginOverlap(AActor* OtherActor)
 {
+	Super::NotifyActorBeginOverlap(OtherActor);
+	ApplyEffects(OtherActor);
+
+
+}
+
+void APickUpActor::ApplyEffects(AActor* InTarget)
+{
+
 	//bImplements이 true면 인터페이스를 구현했다.
 	//bool bImplements = OtherActor->Implements<UStaminaInterface>()
-	UStatComponent* TargetStat = IStatInterface::Execute_GetStatComponent(OtherActor);
+
+
+	/*if (IStatInterface* Stat = Cast<IStatInterface>(InTarget))
+	{
+		UStatComponent* StatComp = Stat->GetStatComponent();
+		if (Stamina > 0)
+		{
+			IStaminaInterface::Execute_RecoveryStamina(StatComp, Stamina);
+		}
+		else if(Stamina<0)
+		{
+			IStaminaInterface::Execute_ConsumeStamina(StatComp, -Stamina);
+		}
+
+		if (Health > 0)
+		{
+			IStatInterface::Execute_RecoveryHealth(StatComp, Health);
+		}
+		else if (Health < 0)
+		{
+			IStatInterface::Execute_Damaged(StatComp, -Health);
+		}
+	}*/
+
+
+	UStatComponent* TargetStat = IStatInterface::Execute_GetStatComponent(InTarget);
 	if (TargetStat && TargetStat->Implements<UStaminaInterface>())
 	{
 		if (Stamina > 0)
@@ -51,7 +86,18 @@ void APickUpActor::NotifyActorBeginOverlap(AActor* OtherActor)
 		{
 			IStaminaInterface::Execute_ConsumeStamina(TargetStat, -Stamina);
 		}
+		if (Health > 0)
+		{
+			IStatInterface::Execute_RecoveryHealth(TargetStat, Health);
+		}
+		else if (Health < 0)
+		{
+			IStatInterface::Execute_Damaged(TargetStat, -Health);
+		}
 	}
+
+
+
 
 	//Target이 null이 아니면 인터페이스를 상속받았다.(=C++니까 구현도 되어있다. 블루프린트에서 상속을 했을 경우는 체크 불가능)
 	//IStaminaInterface* Target = Cast<IStaminaInterface>(OtherActor);

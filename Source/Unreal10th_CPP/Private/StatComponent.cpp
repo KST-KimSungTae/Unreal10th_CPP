@@ -25,6 +25,11 @@ float UStatComponent::GetCurrentStamina_Implementation() const
 	return CurrentStamina;
 }
 
+float UStatComponent::GetMaxStamina_Implementation() const
+{
+	return MaxStamina;
+}
+
 bool UStatComponent::ConsumeStamina_Implementation(float InAmount)
 {
 	bool bResult = false;
@@ -45,18 +50,29 @@ bool UStatComponent::ConsumeStamina_Implementation(float InAmount)
 			StaminaRecoveryData.CoolTime //StaminaRecoveryCoolTime
 		);
 
+		OnStaminaChange.Broadcast(CurrentStamina, MaxStamina);
+
+		if (CurrentStamina<=0.1)
+		{
+			OnStaminaEmpty.Broadcast();
+		}
+
 		bResult = true;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("현재 Stamina : %.1f/ %.1f"), CurrentStamina, MaxStamina);
+	//UE_LOG(LogTemp, Log, TEXT("현재 Stamina : %.1f/ %.1f"), CurrentStamina, MaxStamina);
 	return bResult;
 }
 
 void UStatComponent::RecoveryStamina_Implementation(float InAmount)
 {
-	CurrentStamina = FMath::Clamp(CurrentStamina + InAmount, 0.0f, MaxStamina);
-	UE_LOG(LogTemp, Log, TEXT("현재 Stamina : %.1f/ %.1f"), CurrentStamina, MaxStamina);
+	CurrentStamina = FMath::Min(CurrentStamina + InAmount, MaxStamina);
+
+	OnStaminaChange.Broadcast(CurrentStamina, MaxStamina);
+
+	//UE_LOG(LogTemp, Log, TEXT("현재 Stamina : %.1f/ %.1f"), CurrentStamina, MaxStamina);
 	//FMath::IsNearlyEqual(CurrentStamina, MaxStamina);
+
 	if (CurrentStamina >= MaxStamina)
 	{
 		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
@@ -69,21 +85,34 @@ float UStatComponent::GetCurrentHealth_Implementation() const
 	return CurrentHealth;
 }
 
+float UStatComponent::GetMaxHealth_Implementation() const
+{
+	return MaxHealth;
+}
+
 void UStatComponent::Damaged_Implementation(float InAmount)
 {
-	if (CurrentHealth >= InAmount)
+	CurrentHealth -= InAmount;
+	if (CurrentHealth < 0.0f)
 	{
-		CurrentHealth -= InAmount;
+		CurrentHealth = 0;
+		OnHealthChange.Broadcast(CurrentHealth, MaxHealth);
+		OnDie.Broadcast();
 	}
+	else
+	{
+		OnHealthChange.Broadcast(CurrentHealth, MaxHealth);
+	}
+	//UE_LOG(LogTemp, Log, TEXT("현재 Health : %.1f/ %.1f"), CurrentHealth, MaxHealth);
 
-	UE_LOG(LogTemp, Log, TEXT("현재 Health : %.1f/ %.1f"), CurrentHealth, MaxHealth);
+
 }
 
 void UStatComponent::RecoveryHealth_Implementation(float InAmount)
 {
-	CurrentHealth = FMath::Clamp(CurrentHealth + InAmount, 0.0f, MaxHealth);
-
-	UE_LOG(LogTemp, Log, TEXT("현재 Health : %.1f/ %.1f"), CurrentHealth, MaxHealth);
+	CurrentHealth = FMath::Min(CurrentHealth + InAmount, MaxHealth);
+	OnHealthChange.Broadcast(CurrentHealth, MaxHealth);
+	//UE_LOG(LogTemp, Log, TEXT("현재 Health : %.1f/ %.1f"), CurrentHealth, MaxHealth);
 }
 
 
