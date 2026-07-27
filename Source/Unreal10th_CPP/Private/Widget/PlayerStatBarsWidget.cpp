@@ -5,7 +5,7 @@
 #include "Widget/ResourceBarWidget.h"
 #include "../Interface/StatInterface.h"
 #include "../Interface/StaminaInterface.h"
-#include "StatComponent.h"
+#include "Component/StatComponent.h"
 
 void UPlayerStatBarsWidget::NativeConstruct()
 {

@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "PickUpActor.h"
+#include "Item/PickUpActor.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "StatComponent.h"
+#include "Component/StatComponent.h"
 #include "../Interface/StaminaInterface.h"
 #include "../Interface/StatInterface.h"
 
