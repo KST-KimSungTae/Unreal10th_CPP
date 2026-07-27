@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Component/StatComponent.h"
+#include "AnimNotify/MyAnimNotifyState_SectionJump.h"
 
 class USpringArmComponent;
 class UCameraComponent;
@@ -29,6 +30,12 @@ AActionCharacter::AActionCharacter()
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;	// 캐릭터 이동방향으로 바라보게 만들기
 	CameraSpringArmComponent->bUsePawnControlRotation = true;	//스프링암은 컨트롤러 입력에 맞게 회전되기
+}
+
+void AActionCharacter::SetSectionJumpNotify(UMyAnimNotifyState_SectionJump* InSectionJumpNotify)
+{
+	SectionJumpNotify = InSectionJumpNotify;
+	bComboReady = SectionJumpNotify.IsValid();
 }
 
 
@@ -80,6 +87,9 @@ void AActionCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(IA_Boost, ETriggerEvent::Completed, this, &AActionCharacter::OnBoostEnd);
 
 		EnhancedInputComponent->BindAction(IA_Roll, ETriggerEvent::Started, this, &AActionCharacter::OnRollAction);
+	
+		EnhancedInputComponent->BindAction(IA_Attack, ETriggerEvent::Started, this, &AActionCharacter::OnAttackAction);
+	
 	}
 }
 
@@ -128,6 +138,23 @@ void AActionCharacter::OnMoveAction(const FInputActionValue& Value)
 
 	//UE_LOG(LogTemp, Log, TEXT("(%.1f,%.1f)"), MoveAxis.X, MoveAxis.Y);
 
+}
+
+void AActionCharacter::OnAttackAction(const FInputActionValue& Value)
+{
+	if (AnimInstance && IStaminaInterface::Execute_GetCurrentStamina(IStatInterface::Execute_GetStatComponent(this))>AttackCost)
+	{
+		if (!AnimInstance->IsAnyMontagePlaying())
+		{
+			//첫번쨰 콤보 공격
+			PlayAnimMontage(AttackMontage);
+			IStaminaInterface::Execute_ConsumeStamina(IStatInterface::Execute_GetStatComponent(this), AttackCost);
+		}
+		else if (AnimInstance->GetCurrentActiveMontage() == AttackMontage)
+		{
+			SectionJumpForCombo();
+		}
+	}
 }
 
 void AActionCharacter::OnBoostAction()
@@ -182,5 +209,21 @@ void AActionCharacter::SpendSprintStamina(float DeltaTime)
 			OnBoostEnd();
 			UE_LOG(LogTemp, Log, TEXT("부스트 끝"));
 		}
+	}
+}
+
+void AActionCharacter::SectionJumpForCombo()
+{
+	if (SectionJumpNotify.IsValid() && bComboReady)
+	{
+		UAnimMontage* Current = AnimInstance->GetCurrentActiveMontage();
+		AnimInstance->Montage_SetNextSection(	//섹션을 변경한다.
+			AnimInstance->Montage_GetCurrentSection(Current),	//이 섹션에서(from)
+			SectionJumpNotify->GetNextSectionName(),			//이 섹션으로 변경(to)
+			Current	//적용할 몽타주
+		);
+
+		IStaminaInterface::Execute_ConsumeStamina(IStatInterface::Execute_GetStatComponent(this), AttackCost);
+		bComboReady = false;	//중복실행 방지
 	}
 }

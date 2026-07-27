@@ -13,6 +13,7 @@ class UInputAction;
 class USpringArmComponent;
 class UCameraComponent;
 class UStatComponent;
+class UMyAnimNotifyState_SectionJump;
 
 UCLASS()
 class UNREAL10TH_CPP_API AActionCharacter : public ACharacter, public IStatInterface
@@ -23,7 +24,7 @@ public:
 	// Sets default values for this character's properties
 	AActionCharacter();
 
-
+	void SetSectionJumpNotify(UMyAnimNotifyState_SectionJump* InSectionJumpNotify);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -43,6 +44,7 @@ protected:
 	void OnTestAction(const FInputActionValue& Value);
 
 	void OnMoveAction(const FInputActionValue& Value);
+	void OnAttackAction(const FInputActionValue& Value);
 
 	void OnBoostAction();
 
@@ -53,6 +55,7 @@ protected:
 private:
 	void SpendSprintStamina(float DeltaTime);
 
+	void SectionJumpForCombo();
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -67,8 +70,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UInputAction>IA_Roll;
 
-	UPROPERTY(EditAnyWhere, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UInputAction>IA_Attack;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Action Anim")
 	TObjectPtr<UAnimMontage> RollMontage;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Action Anim")
+	TObjectPtr<UAnimMontage> AttackMontage;
 
 
 
@@ -97,6 +106,11 @@ protected:
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Stat|Stamina")
 	float StaminaAutoRecoveryInterval = 0.1f;
 
+	//공격시 소비되는 스태미너 양
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Stat|Stamina")
+	float AttackCost = 5.0f;
+
+
 
 
 protected:
@@ -116,4 +130,9 @@ private:
 
 	bool bSprintMode = false;
 
+	//발생한 노티파이를 저장해 놓는 변수
+	TWeakObjectPtr<UMyAnimNotifyState_SectionJump>SectionJumpNotify = nullptr;
+	
+	//현재 콤보가 가능한지 확인하기 위한 변수
+	bool bComboReady = false;
 };
