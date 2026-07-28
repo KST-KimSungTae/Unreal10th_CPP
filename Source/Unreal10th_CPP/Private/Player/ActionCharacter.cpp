@@ -98,6 +98,11 @@ UStatComponent* AActionCharacter::GetStatComponent_Implementation() const
 	return StatComponent.Get();
 }
 
+void AActionCharacter::OnWeaponAttackState(bool bEnable)
+{
+	OnOnWeaponAttackStateChanged.Execute(bEnable);
+}
+
 
 void AActionCharacter::OnTestAction(const FInputActionValue& Value)
 {

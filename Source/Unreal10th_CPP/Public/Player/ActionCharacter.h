@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "../Interface/StatInterface.h"
+#include "Interface/WeaponUserInterface.h"
 #include "ActionCharacter.generated.h"
 
 
@@ -16,7 +17,7 @@ class UStatComponent;
 class UMyAnimNotifyState_SectionJump;
 
 UCLASS()
-class UNREAL10TH_CPP_API AActionCharacter : public ACharacter, public IStatInterface
+class UNREAL10TH_CPP_API AActionCharacter : public ACharacter, public IStatInterface,public IWeaponUserInterface
 {
 	GENERATED_BODY()
 
@@ -25,6 +26,11 @@ public:
 	AActionCharacter();
 
 	void SetSectionJumpNotify(UMyAnimNotifyState_SectionJump* InSectionJumpNotify);
+
+	virtual FOnWeaponAttackStateChanged& GetWeaponAttackStateChangedDelegate() override {
+		return OnOnWeaponAttackStateChanged;
+	};
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -40,6 +46,7 @@ public:
 
 	virtual UStatComponent* GetStatComponent_Implementation() const override;
 
+	virtual void OnWeaponAttackState(bool bEnable) override;
 protected:
 	void OnTestAction(const FInputActionValue& Value);
 
@@ -57,6 +64,8 @@ private:
 
 	void SectionJumpForCombo();
 
+public:
+	FOnWeaponAttackStateChanged OnOnWeaponAttackStateChanged;
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UInputAction>IA_Test;
