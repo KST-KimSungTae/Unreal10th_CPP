@@ -7,6 +7,7 @@
 #include "PickUpActor.generated.h"
 
 class USphereComponent;
+class AWeaponActor;
 UCLASS()
 class UNREAL10TH_CPP_API APickUpActor : public AActor
 {
@@ -41,4 +42,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Health = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup")
+	TSubclassOf<AWeaponActor> WeaponClass;
 };

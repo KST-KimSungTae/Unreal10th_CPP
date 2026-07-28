@@ -9,6 +9,8 @@
 #include "Camera/CameraComponent.h"
 #include "Component/StatComponent.h"
 #include "AnimNotify/MyAnimNotifyState_SectionJump.h"
+#include "Components/CapsuleComponent.h"
+#include "Unreal10th_CPP/Unreal10th_CPP.h"
 
 class USpringArmComponent;
 class UCameraComponent;
@@ -30,6 +32,9 @@ AActionCharacter::AActionCharacter()
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;	// 캐릭터 이동방향으로 바라보게 만들기
 	CameraSpringArmComponent->bUsePawnControlRotation = true;	//스프링암은 컨트롤러 입력에 맞게 회전되기
+
+	// 무기(ECC_Weapon)에 맞을 수 있게 (플레이어·적 공통)
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Weapon, ECR_Overlap);
 }
 
 void AActionCharacter::SetSectionJumpNotify(UMyAnimNotifyState_SectionJump* InSectionJumpNotify)
@@ -100,7 +105,17 @@ UStatComponent* AActionCharacter::GetStatComponent_Implementation() const
 
 void AActionCharacter::OnWeaponAttackState(bool bEnable)
 {
-	OnOnWeaponAttackStateChanged.Execute(bEnable);
+	OnOnWeaponAttackStateChanged.ExecuteIfBound(bEnable);
+}
+
+float AActionCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	UStatComponent* Stat = IStatInterface::Execute_GetStatComponent(this);
+	if (Stat)
+	{
+		IStatInterface::Execute_Damaged(Stat, DamageAmount);   // OnHealthChange / OnDie 자동 브로드캐스트
+	}
+	return DamageAmount;
 }
 
 
@@ -149,6 +164,8 @@ void AActionCharacter::OnAttackAction(const FInputActionValue& Value)
 {
 	if (AnimInstance && IStaminaInterface::Execute_GetCurrentStamina(IStatInterface::Execute_GetStatComponent(this))>AttackCost)
 	{
+		OnWeaponAttackState(false);
+
 		if (!AnimInstance->IsAnyMontagePlaying())
 		{
 			//첫번쨰 콤보 공격

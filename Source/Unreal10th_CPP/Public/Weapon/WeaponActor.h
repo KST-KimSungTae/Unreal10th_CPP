@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Unreal10th_CPP/Unreal10th_CPP.h"
 #include "WeaponActor.generated.h"
 
 class ACharacter;
@@ -21,9 +22,11 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+public:
 	UFUNCTION(BlueprintCallable)
 	void OnEquipped(AActor* InOwner);
 
+protected:
 	UFUNCTION()
 	void OnHitAreaBeginOverlap(
 		UPrimitiveComponent*		InOverlappedComponent,
@@ -49,4 +52,13 @@ protected:
 private:
 	//무기를 장비하고 있는 대상
 	TWeakObjectPtr<ACharacter> OwnerCharacter = nullptr;
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	float Damage = 20.0f;
+
+
+	// 이 무기가 때릴 대상 채널 (플레이어무기=Enemy, 적무기=Pawn)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TEnumAsByte<ECollisionChannel> TargetChannel = ECC_Enemy;
 };

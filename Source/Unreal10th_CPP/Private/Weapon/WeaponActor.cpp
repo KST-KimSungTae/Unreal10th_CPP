@@ -6,6 +6,7 @@
 #include "GameFrameWork/Character.h"
 #include "Unreal10th_CPP/Unreal10th_CPP.h"
 #include "Interface/WeaponUserInterface.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AWeaponActor::AWeaponActor()
@@ -30,8 +31,8 @@ AWeaponActor::AWeaponActor()
 	HitArea->SetCapsuleRadius(34.0f, false);
 	HitArea->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	HitArea->SetCollisionObjectType(ECC_Weapon);
-	HitArea->SetCollisionResponseToAllChannels(ECR_Ignore);
-	HitArea->SetCollisionResponseToChannel(ECC_Enemy, ECR_Overlap);
+	//HitArea->SetCollisionResponseToAllChannels(ECR_Ignore);
+	//HitArea->SetCollisionResponseToChannel(ECC_Enemy, ECR_Overlap);
 	HitArea->SetRelativeLocation(FVector(0.0f, 0.0f, 30.0f));
 
 }
@@ -40,6 +41,12 @@ AWeaponActor::AWeaponActor()
 void AWeaponActor::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// 대상 채널만 Overlap, 나머지는 Ignore
+	HitArea->SetCollisionResponseToAllChannels(ECR_Ignore);
+	HitArea->SetCollisionResponseToChannel(TargetChannel, ECR_Overlap);
+
+
 	HitArea->OnComponentBeginOverlap.AddDynamic(this, &AWeaponActor::OnHitAreaBeginOverlap);
 }
 
@@ -63,7 +70,10 @@ void AWeaponActor::OnEquipped(AActor* InOwner)
 
 void AWeaponActor::OnHitAreaBeginOverlap(UPrimitiveComponent* InOverlappedComponent, AActor* InOtherActor, UPrimitiveComponent* InOtherComp, int32 InOtherBodyIndex, bool InbFromSweep, const FHitResult& InSweepResult)
 {
-	UE_LOG(LogTemp,Log,TEXT("오버랩 된 대상 : %s"),*InOtherActor->GetName())
+
+	UE_LOG(LogTemp, Log, TEXT("오버랩 된 대상 : %s"), *InOtherActor->GetName());
+	UGameplayStatics::ApplyDamage(InOtherActor, Damage, OwnerCharacter->GetController(), this, nullptr);
+	//InOtherActor->ReceiveAnyDamage(Damage, );
 }
 
 void AWeaponActor::AttackEnable(bool bEnable)

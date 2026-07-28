@@ -47,6 +47,8 @@ public:
 	virtual UStatComponent* GetStatComponent_Implementation() const override;
 
 	virtual void OnWeaponAttackState(bool bEnable) override;
+
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 protected:
 	void OnTestAction(const FInputActionValue& Value);
 
@@ -144,4 +146,5 @@ private:
 	
 	//현재 콤보가 가능한지 확인하기 위한 변수
 	bool bComboReady = false;
+
 };
