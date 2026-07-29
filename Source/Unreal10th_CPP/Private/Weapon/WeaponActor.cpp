@@ -7,6 +7,7 @@
 #include "Unreal10th_CPP/Unreal10th_CPP.h"
 #include "Interface/WeaponUserInterface.h"
 #include "Kismet/GameplayStatics.h"
+#include "Data/WeaponDataAsset.h"
 
 // Sets default values
 AWeaponActor::AWeaponActor()
@@ -58,6 +59,18 @@ void AWeaponActor::EquippedToTarget(AActor* InTarget)
 void AWeaponActor::InitializeWeapon(UWeaponDataAsset* InData)
 {
 	WeaponData = InData;
+	Mesh->SetStaticMesh(WeaponData->Mesh.Get());
+}
+
+void AWeaponActor::DropWeapon()
+{
+	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
+	DetachFromActor(DetachRules);
+
+	Mesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	Mesh->SetSimulatePhysics(true);
+	HitArea->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AWeaponActor::OnEquipped(AActor* InOwner)

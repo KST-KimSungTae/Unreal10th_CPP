@@ -29,6 +29,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void InitializeWeapon(UWeaponDataAsset* InData);
 
+	UFUNCTION(BlueprintCallable)
+	void DropWeapon();
+
 protected:
 
 	UFUNCTION(BlueprintCallable)

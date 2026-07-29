@@ -72,6 +72,8 @@ private:
 
 	void SectionJumpForCombo();
 
+	void SpawnWeaponActor();
+
 public:
 	FOnWeaponAttackStateChanged OnOnWeaponAttackStateChanged;
 protected:

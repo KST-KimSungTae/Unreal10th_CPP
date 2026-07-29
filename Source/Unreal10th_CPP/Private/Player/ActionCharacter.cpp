@@ -42,28 +42,29 @@ AActionCharacter::AActionCharacter()
 
 void AActionCharacter::EquipWeapon_Implementation(UWeaponDataAsset* InWeaponData)
 {
+	//이전 무기 해제
+	if (CurrentWeapon.IsValid())
+	{
+		CurrentWeapon.Get()->DropWeapon();
+		CurrentWeapon = nullptr;
+	}
+
+
+	//새무기 장비
+	CurrentWeaponData = InWeaponData;
 	if (!InWeaponData->IsLoadCompleted())
 	{
 		InWeaponData->RequestDataLoad(
-			FStreamableDelegate::CreateLambda(this, [this]()
+			FStreamableDelegate::CreateWeakLambda(this, [this]()
 				{
-					CurrentWeapon = GetWorld()->SpawnActorDeferred<AWeaponActor>(
-						AWeaponActor::StaticClass(),
-						FTransform::Identity,
-						this,this);
-					if (CurrentWeapon.IsValid())
-					{
-						CurrentWeapon->InitializeWeapon(CurrentWeaponData);
-						UGameplayStatics::FinishSpawningActor(
-							CurrentWeapon.Get(),
-							FTransform::Identity);
-					}
-
-					CurrentWeapon->EquippedToTarget(this);
+					SpawnWeaponActor();
 				})
 		);
 	}
-	CurrentWeaponData = InWeaponData;
+	else
+	{
+		SpawnWeaponActor();
+	}
 	//InWeaponData->Mesh.Get();
 }
 
@@ -283,4 +284,21 @@ void AActionCharacter::SectionJumpForCombo()
 		IStaminaInterface::Execute_ConsumeStamina(IStatInterface::Execute_GetStatComponent(this), AttackCost);
 		bComboReady = false;	//중복실행 방지
 	}
+}
+
+void AActionCharacter::SpawnWeaponActor()
+{
+	CurrentWeapon = GetWorld()->SpawnActorDeferred<AWeaponActor>(
+		AWeaponActor::StaticClass(),
+		FTransform::Identity,
+		this, this);
+	if (CurrentWeapon.IsValid())
+	{
+		CurrentWeapon->InitializeWeapon(CurrentWeaponData);
+		UGameplayStatics::FinishSpawningActor(
+			CurrentWeapon.Get(),
+			FTransform::Identity);
+	}
+
+	CurrentWeapon->EquippedToTarget(this);
 }
