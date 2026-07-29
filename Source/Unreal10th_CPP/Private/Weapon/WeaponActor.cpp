@@ -50,6 +50,16 @@ void AWeaponActor::BeginPlay()
 	HitArea->OnComponentBeginOverlap.AddDynamic(this, &AWeaponActor::OnHitAreaBeginOverlap);
 }
 
+void AWeaponActor::EquippedToTarget(AActor* InTarget)
+{
+	OnEquipped(InTarget);
+}
+
+void AWeaponActor::InitializeWeapon(UWeaponDataAsset* InData)
+{
+	WeaponData = InData;
+}
+
 void AWeaponActor::OnEquipped(AActor* InOwner)
 {
 	SetOwner(InOwner);

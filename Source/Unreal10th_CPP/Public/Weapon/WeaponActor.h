@@ -24,9 +24,16 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void OnEquipped(AActor* InOwner);
+	void EquippedToTarget(AActor* InTarget);
+
+	UFUNCTION(BlueprintCallable)
+	void InitializeWeapon(UWeaponDataAsset* InData);
 
 protected:
+
+	UFUNCTION(BlueprintCallable)
+	void OnEquipped(AActor* InOwner);
+
 	UFUNCTION()
 	void OnHitAreaBeginOverlap(
 		UPrimitiveComponent*		InOverlappedComponent,
@@ -57,6 +64,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	float Damage = 20.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UWeaponDataAsset>WeaponData;
 
 	// 이 무기가 때릴 대상 채널 (플레이어무기=Enemy, 적무기=Pawn)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")

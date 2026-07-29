@@ -57,7 +57,7 @@ void APickUpActor::ApplyEffects(AActor* InTarget)
 		if (AWeaponActor* Weapon = GetWorld()->SpawnActor<AWeaponActor>(
 			WeaponClass, GetActorTransform(), Params))
 		{
-			Weapon->OnEquipped(InTarget);   // 소켓 부착 + AttackEnable 델리게이트 바인딩까지 여기서 처리
+			Weapon->EquippedToTarget(InTarget);   // 소켓 부착 + AttackEnable 델리게이트 바인딩까지 여기서 처리
 			UE_LOG(LogTemp, Log, TEXT("%s 무기 획득"), *InTarget->GetName());
 		}
 	}

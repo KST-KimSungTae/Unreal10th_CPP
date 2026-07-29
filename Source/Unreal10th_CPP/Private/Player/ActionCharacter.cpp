@@ -11,6 +11,9 @@
 #include "AnimNotify/MyAnimNotifyState_SectionJump.h"
 #include "Components/CapsuleComponent.h"
 #include "Unreal10th_CPP/Unreal10th_CPP.h"
+#include "Data/WeaponDataAsset.h"
+#include "Weapon/WeaponActor.h"
+#include "Kismet/GameplayStatics.h"
 
 class USpringArmComponent;
 class UCameraComponent;
@@ -36,6 +39,36 @@ AActionCharacter::AActionCharacter()
 	// 무기(ECC_Weapon)에 맞을 수 있게 (플레이어·적 공통)
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Weapon, ECR_Overlap);
 }
+
+void AActionCharacter::EquipWeapon_Implementation(UWeaponDataAsset* InWeaponData)
+{
+	if (!InWeaponData->IsLoadCompleted())
+	{
+		InWeaponData->RequestDataLoad(
+			FStreamableDelegate::CreateLambda(this, [this]()
+				{
+					FActorSpawnParameters SpawnParam;
+					SpawnParam.Owner = this;
+					SpawnParam.Instigator = this->GetInstigator();
+
+					CurrentWeapon = GetWorld()->SpawnActorDeferred<AWeaponActor>(
+						AWeaponActor::StaticClass(),
+						FTransform::Identity,
+						this,this);
+					if (CurrentWeapon.IsValid())
+					{
+						CurrentWeapon->InitializeWeapon(CurrentWeaponData);
+						UGameplayStatics::FinishSpawningActor(CurrentWeapon.Get(), FTransform::Identity);
+					}
+
+					CurrentWeapon->EquippedToTarget(this);
+				})
+		);
+	}
+	CurrentWeaponData = InWeaponData;
+	//InWeaponData->Mesh.Get();
+}
+
 
 void AActionCharacter::SetSectionJumpNotify(UMyAnimNotifyState_SectionJump* InSectionJumpNotify)
 {
@@ -110,12 +143,16 @@ void AActionCharacter::OnWeaponAttackState(bool bEnable)
 
 float AActionCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	float Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
 	UStatComponent* Stat = IStatInterface::Execute_GetStatComponent(this);
 	if (Stat)
 	{
-		IStatInterface::Execute_Damaged(Stat, DamageAmount);   // OnHealthChange / OnDie 자동 브로드캐스트
+		IStatInterface::Execute_Damaged(Stat, Damage);   // OnHealthChange / OnDie 자동 브로드캐스트
+	
+		UE_LOG(LogTemp, Log, TEXT("%f 데미지를 입었습니다.(공격자: %s"),Damage,*EventInstigator->GetName());
 	}
-	return DamageAmount;
+	return Damage;
 }
 
 
