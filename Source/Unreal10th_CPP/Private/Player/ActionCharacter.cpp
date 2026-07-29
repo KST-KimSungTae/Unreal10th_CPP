@@ -47,10 +47,6 @@ void AActionCharacter::EquipWeapon_Implementation(UWeaponDataAsset* InWeaponData
 		InWeaponData->RequestDataLoad(
 			FStreamableDelegate::CreateLambda(this, [this]()
 				{
-					FActorSpawnParameters SpawnParam;
-					SpawnParam.Owner = this;
-					SpawnParam.Instigator = this->GetInstigator();
-
 					CurrentWeapon = GetWorld()->SpawnActorDeferred<AWeaponActor>(
 						AWeaponActor::StaticClass(),
 						FTransform::Identity,
@@ -58,7 +54,9 @@ void AActionCharacter::EquipWeapon_Implementation(UWeaponDataAsset* InWeaponData
 					if (CurrentWeapon.IsValid())
 					{
 						CurrentWeapon->InitializeWeapon(CurrentWeaponData);
-						UGameplayStatics::FinishSpawningActor(CurrentWeapon.Get(), FTransform::Identity);
+						UGameplayStatics::FinishSpawningActor(
+							CurrentWeapon.Get(),
+							FTransform::Identity);
 					}
 
 					CurrentWeapon->EquippedToTarget(this);
