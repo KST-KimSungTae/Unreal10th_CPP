@@ -24,6 +24,7 @@ protected:
 
 	bool IsPickEffectAssetReady() const;
 
+
 protected:
 	//이 픽업을 먹었을 때 획득하는 무기 데이터
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Base Data")
@@ -66,4 +67,5 @@ private:
 
 	//아이템을 줍는 위치
 	FVector PickupStartLocation;
+
 };

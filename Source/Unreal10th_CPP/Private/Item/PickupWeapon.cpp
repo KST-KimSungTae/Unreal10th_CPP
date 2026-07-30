@@ -104,3 +104,4 @@ bool APickupWeapon::IsPickEffectAssetReady() const
 {
 	return PickUpAlpha!=nullptr && PickUpHeight!=nullptr && PickUpscale!=nullptr;
 }
+

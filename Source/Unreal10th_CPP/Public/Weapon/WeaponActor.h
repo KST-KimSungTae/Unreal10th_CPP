@@ -32,6 +32,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void DropWeapon();
 
+	void CountSupplies();
 protected:
 
 	UFUNCTION(BlueprintCallable)
@@ -48,6 +49,7 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void AttackEnable(bool bEnable);
+
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -79,4 +81,7 @@ public:
 private:
 	//PhysicsDelay 용 핸들
 	FTimerHandle PhysicsDelayTimerHandle;
+
+public:
+	float Count = 0;
 };

@@ -38,10 +38,15 @@ AActionCharacter::AActionCharacter()
 
 	// 무기(ECC_Weapon)에 맞을 수 있게 (플레이어·적 공통)
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Weapon, ECR_Overlap);
+
 }
 
 void AActionCharacter::EquipWeapon_Implementation(UWeaponDataAsset* InWeaponData)
 {
+	if (OriginalWeaponData == nullptr)
+	{
+		OriginalWeaponData = InWeaponData;
+	}
 	//이전 무기 해제
 	if (CurrentWeapon.IsValid())
 	{
@@ -207,10 +212,21 @@ void AActionCharacter::OnAttackAction(const FInputActionValue& Value)
 			//첫번쨰 콤보 공격
 			PlayAnimMontage(AttackMontage);
 			IStaminaInterface::Execute_ConsumeStamina(IStatInterface::Execute_GetStatComponent(this), AttackCost);
+			
+			if (CurrentWeapon.IsValid())
+			{
+				CurrentWeapon.Get()->CountSupplies();
+			}
+			
+
 		}
 		else if (AnimInstance->GetCurrentActiveMontage() == AttackMontage)
 		{
 			SectionJumpForCombo();
+			//if (CurrentWeapon.IsValid())
+			//{
+			//	CurrentWeapon.Get()->CountSupplies();
+			//}
 		}
 	}
 }
@@ -282,6 +298,12 @@ void AActionCharacter::SectionJumpForCombo()
 		);
 
 		IStaminaInterface::Execute_ConsumeStamina(IStatInterface::Execute_GetStatComponent(this), AttackCost);
+		
+		if (CurrentWeapon.IsValid())
+		{
+			CurrentWeapon.Get()->CountSupplies();
+		}
+		
 		bComboReady = false;	//중복실행 방지
 	}
 }
@@ -302,3 +324,31 @@ void AActionCharacter::SpawnWeaponActor()
 
 	CurrentWeapon->EquippedToTarget(this);
 }
+
+void AActionCharacter::EquipInitialWeapon()
+{
+	if (CurrentWeaponData != OriginalWeaponData)
+	{
+		// 소진된 현재 무기 드랍
+		if (CurrentWeapon.IsValid())
+		{
+			CurrentWeapon->DropWeapon();
+			CurrentWeapon = nullptr;
+		}
+		// 처음 무기로 복귀 (InitialWeaponData는 비우지 않음 — 항상 기억)
+		CurrentWeaponData = OriginalWeaponData;
+		if (CurrentWeaponData)
+		{
+			if (!CurrentWeaponData->IsLoadCompleted())
+			{
+				CurrentWeaponData->RequestDataLoad(
+					FStreamableDelegate::CreateWeakLambda(this, [this]() { SpawnWeaponActor(); }));
+			}
+			else
+			{
+				SpawnWeaponActor();
+			}
+		}
+	}
+}
+

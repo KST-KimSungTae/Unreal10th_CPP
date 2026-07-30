@@ -27,6 +27,8 @@ public:
 	// Sets default values for this character's properties
 	AActionCharacter();
 
+	
+
 	void EquipWeapon_Implementation(UWeaponDataAsset* InWeaponData) override;
 
 	void SetSectionJumpNotify(UMyAnimNotifyState_SectionJump* InSectionJumpNotify);
@@ -73,6 +75,9 @@ private:
 	void SectionJumpForCombo();
 
 	void SpawnWeaponActor();
+
+public:
+	void EquipInitialWeapon();
 
 public:
 	FOnWeaponAttackStateChanged OnOnWeaponAttackStateChanged;
@@ -134,6 +139,9 @@ protected:
 	TWeakObjectPtr<AWeaponActor> CurrentWeapon = nullptr;
 
 	TObjectPtr<UWeaponDataAsset>CurrentWeaponData = nullptr;
+
+	TObjectPtr<UWeaponDataAsset> OriginalWeaponData = nullptr;
+
 
 protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)

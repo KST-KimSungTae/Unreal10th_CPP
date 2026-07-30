@@ -8,6 +8,7 @@
 #include "Interface/WeaponUserInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Data/WeaponDataAsset.h"
+#include "Player/ActionCharacter.h"
 
 // Sets default values
 AWeaponActor::AWeaponActor()
@@ -153,6 +154,23 @@ void AWeaponActor::AttackEnable(bool bEnable)
 	else
 	{
 		HitArea->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+void AWeaponActor::CountSupplies()
+{
+	if (Count < 3)
+	{
+		Count++;
+	}
+	else if (Count >= 3)
+	{
+		//IWeaponUserInterface::Execute_EquipWeapon(OwnerCharacter.Get(), WeaponData);
+		AActionCharacter* ActionOwner = Cast<AActionCharacter>(OwnerCharacter.Get());
+		if (ActionOwner)
+		{
+			ActionOwner->EquipInitialWeapon();
+		}
 	}
 }
 
