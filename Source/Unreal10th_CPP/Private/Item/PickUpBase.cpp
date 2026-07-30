@@ -4,20 +4,26 @@
 #include "Item/PickUpBase.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 APickUpBase::APickUpBase()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("RootCollision"));
 	SphereCollision->InitSphereRadius(100.0f);
 	SetRootComponent(SphereCollision);
 
 
+
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(SphereCollision);
+	Mesh->SetCollisionProfileName("NoCollision");
+
+	NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("VFX"));
+	NiagaraComponent->SetupAttachment(SphereCollision);
 }
 
 // Called when the game starts or when spawned
@@ -31,7 +37,10 @@ void APickUpBase::BeginPlay()
 void APickUpBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	if (bIdle)
+	{
+		OnUpdateUpDownSpin(DeltaTime);
+	}
 }
 
 void APickUpBase::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -42,5 +51,26 @@ void APickUpBase::NotifyActorBeginOverlap(AActor* OtherActor)
 
 void APickUpBase::OnPickup(AActor* InTarget)
 {
+	bIdle = false;
+}
+
+void APickUpBase::OnUpdateUpDownSpin(float InDeltaTime)
+{
+	if (!IsCurveAssetReady()) return;
+
+	ElapsedTime += InDeltaTime;
+	float Progress = FMath::Fmod(ElapsedTime / UpDownDuration, 1.0f);
+	FVector NewMeshLocation = MeshBaseLocation;
+	NewMeshLocation.Z += UpDownCurve->GetFloatValue(Progress)* UpDownHeight;
+
+	Mesh->SetRelativeLocation(NewMeshLocation);
+
+	float NewAngle = SpinCurve->GetFloatValue(Progress) * 360.0f;
+	Mesh->SetRelativeRotation(FRotator(0.0f, NewAngle,0.0f));
+}
+
+bool APickUpBase::IsCurveAssetReady() const
+{
+	return UpDownCurve!=nullptr && SpinCurve!=nullptr;
 }
 
