@@ -77,9 +77,13 @@ private:
 	void SpawnWeaponActor();
 
 public:
+	void ReserveInitialWeaponSwap();
+
+	void OnAttackMontageEnded();
+
 	void EquipInitialWeapon();
 
-public:
+
 	FOnWeaponAttackStateChanged OnOnWeaponAttackStateChanged;
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -135,11 +139,13 @@ protected:
 	float AttackCost = 5.0f;
 
 	//현재 장비중인 무기
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TWeakObjectPtr<AWeaponActor> CurrentWeapon = nullptr;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<UWeaponDataAsset>CurrentWeaponData = nullptr;
-
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<UWeaponDataAsset> OriginalWeaponData = nullptr;
 
 
@@ -165,5 +171,7 @@ private:
 	
 	//현재 콤보가 가능한지 확인하기 위한 변수
 	bool bComboReady = false;
+
+	bool bPendingWeaponSwap = false;
 
 };

@@ -66,6 +66,7 @@ bool UStatComponent::ConsumeStamina_Implementation(float InAmount)
 
 void UStatComponent::RecoveryStamina_Implementation(float InAmount)
 {
+	InAmount = FMath::Max(InAmount, 0.001f);
 	CurrentStamina = FMath::Min(CurrentStamina + InAmount, MaxStamina);
 
 	OnStaminaChange.Broadcast(CurrentStamina, MaxStamina);

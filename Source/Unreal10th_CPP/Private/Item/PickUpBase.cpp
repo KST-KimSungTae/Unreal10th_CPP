@@ -51,6 +51,8 @@ void APickUpBase::NotifyActorBeginOverlap(AActor* OtherActor)
 
 void APickUpBase::OnPickup(AActor* InTarget)
 {
+	UE_LOG(LogTemp, Log, TEXT("%s(이)가 %s를 획득했습니다."),
+		InTarget ? *InTarget->GetName() : TEXT("알 수 없는 대상"), *this->GetName());
 	bIdle = false;
 }
 
@@ -59,7 +61,9 @@ void APickUpBase::OnUpdateUpDownSpin(float InDeltaTime)
 	if (!IsCurveAssetReady()) return;
 
 	ElapsedTime += InDeltaTime;
-	float Progress = FMath::Fmod(ElapsedTime / UpDownDuration, 1.0f);
+
+	float Div = FMath::Max(UpDownDuration, 0.001f);
+	float Progress = FMath::Fmod(ElapsedTime / Div, 1.0f);
 	FVector NewMeshLocation = MeshBaseLocation;
 	NewMeshLocation.Z += UpDownCurve->GetFloatValue(Progress)* UpDownHeight;
 

@@ -22,7 +22,4 @@ protected:
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 
 
-private:
-	IWeaponUserInterface* WeaponOwner = nullptr;
-
 };

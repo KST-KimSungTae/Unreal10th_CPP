@@ -69,7 +69,8 @@ void APickupWeapon::OnUpdatePickupEffect()
 	}
 
 	PickUpElapsedTime += TimerInterval;
-	float Progress = PickUpElapsedTime / PickUpEffectduration;
+	float Div = FMath::Max(PickUpEffectduration, 0.001f);
+	float Progress = PickUpElapsedTime / Div;
 
 	float DistanceAlpha = PickUpAlpha->GetFloatValue(Progress);
 	//FVector Start = Mesh->GetComponentLocation();

@@ -66,6 +66,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite)
 	TObjectPtr<UWeaponDataAsset>WeaponData;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite)
+	int32 CurrentCount;
+
 	//무기 드랍된후 사라질때 까지의 시간
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite)
 	float DropLifeSpan = 10.0f;
@@ -83,5 +86,9 @@ private:
 	FTimerHandle PhysicsDelayTimerHandle;
 
 public:
-	float Count = 0;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite)
+	int32 MaxCount = 0;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite)
+	int32 Count = 0;
 };

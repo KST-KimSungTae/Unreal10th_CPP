@@ -28,7 +28,5 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName NextSectionName;
 
-private:
-	TWeakObjectPtr<AActionCharacter> OwnerCharacter = nullptr;
 
 };

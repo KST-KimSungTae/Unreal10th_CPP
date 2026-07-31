@@ -47,6 +47,7 @@ void AActionCharacter::EquipWeapon_Implementation(UWeaponDataAsset* InWeaponData
 	{
 		OriginalWeaponData = InWeaponData;
 	}
+
 	//이전 무기 해제
 	if (CurrentWeapon.IsValid())
 	{
@@ -57,9 +58,9 @@ void AActionCharacter::EquipWeapon_Implementation(UWeaponDataAsset* InWeaponData
 
 	//새무기 장비
 	CurrentWeaponData = InWeaponData;
-	if (!InWeaponData->IsLoadCompleted())
+	if (!CurrentWeaponData->IsLoadCompleted())
 	{
-		InWeaponData->RequestDataLoad(
+		CurrentWeaponData->RequestDataLoad(
 			FStreamableDelegate::CreateWeakLambda(this, [this]()
 				{
 					SpawnWeaponActor();
@@ -154,7 +155,17 @@ float AActionCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 	{
 		IStatInterface::Execute_Damaged(Stat, Damage);   // OnHealthChange / OnDie 자동 브로드캐스트
 	
-		UE_LOG(LogTemp, Log, TEXT("%f 데미지를 입었습니다.(공격자: %s"),Damage,*EventInstigator->GetName());
+		FString InstigatorName;
+		if (EventInstigator)
+		{
+			InstigatorName = EventInstigator->GetName();
+		}
+		else
+		{
+			InstigatorName = "알 수 없음";
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("%f 데미지를 입었습니다.(공격자: %s"),Damage, *InstigatorName);
 	}
 	return Damage;
 }
@@ -209,15 +220,22 @@ void AActionCharacter::OnAttackAction(const FInputActionValue& Value)
 
 		if (!AnimInstance->IsAnyMontagePlaying())
 		{
+
 			//첫번쨰 콤보 공격
 			PlayAnimMontage(AttackMontage);
+
+			//FOnMontageEnded EndDelegate;
+			//EndDelegate.BindUObject(this, &AActionCharacter::OnAttackMontageEnded);
+			//AnimInstance->Montage_SetEndDelegate(EndDelegate, AttackMontage);
+
 			IStaminaInterface::Execute_ConsumeStamina(IStatInterface::Execute_GetStatComponent(this), AttackCost);
-			
+
 			if (CurrentWeapon.IsValid())
 			{
-				CurrentWeapon.Get()->CountSupplies();
+				CurrentWeapon->CountSupplies();
 			}
-			
+
+
 
 		}
 		else if (AnimInstance->GetCurrentActiveMontage() == AttackMontage)
@@ -299,6 +317,10 @@ void AActionCharacter::SectionJumpForCombo()
 
 		IStaminaInterface::Execute_ConsumeStamina(IStatInterface::Execute_GetStatComponent(this), AttackCost);
 		
+		//FOnMontageEnded EndDelegate;
+		//EndDelegate.BindUObject(this, &AActionCharacter::OnAttackMontageEnded);
+		//AnimInstance->Montage_SetEndDelegate(EndDelegate, AttackMontage);
+
 		if (CurrentWeapon.IsValid())
 		{
 			CurrentWeapon.Get()->CountSupplies();
@@ -325,6 +347,15 @@ void AActionCharacter::SpawnWeaponActor()
 	CurrentWeapon->EquippedToTarget(this);
 }
 
+void AActionCharacter::ReserveInitialWeaponSwap()
+{
+	// 이미 초기 무기면 예약할 필요 없음
+	if (CurrentWeaponData != OriginalWeaponData)
+	{
+		bPendingWeaponSwap = true;
+	}
+}
+
 void AActionCharacter::EquipInitialWeapon()
 {
 	if (CurrentWeaponData != OriginalWeaponData)
@@ -349,6 +380,15 @@ void AActionCharacter::EquipInitialWeapon()
 				SpawnWeaponActor();
 			}
 		}
+	}
+}
+
+void AActionCharacter::OnAttackMontageEnded()
+{
+	if (bPendingWeaponSwap)
+	{
+		bPendingWeaponSwap = false;
+		EquipInitialWeapon();   // 몽타주가 끝난 지금 교체
 	}
 }
 

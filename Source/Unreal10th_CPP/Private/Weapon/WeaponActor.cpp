@@ -31,7 +31,7 @@ AWeaponActor::AWeaponActor()
 
 	HitArea->SetCapsuleHalfHeight(84.0f, false);
 	HitArea->SetCapsuleRadius(34.0f, false);
-	HitArea->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	HitArea->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	HitArea->SetCollisionObjectType(ECC_Weapon);
 	//HitArea->SetCollisionResponseToAllChannels(ECR_Ignore);
 	//HitArea->SetCollisionResponseToChannel(ECC_Enemy, ECR_Overlap);
@@ -50,6 +50,8 @@ void AWeaponActor::BeginPlay()
 
 
 	HitArea->OnComponentBeginOverlap.AddDynamic(this, &AWeaponActor::OnHitAreaBeginOverlap);
+	CurrentCount = WeaponData.Get()->UseCount;
+	MaxCount= WeaponData.Get()->UseCount;
 }
 
 void AWeaponActor::EquippedToTarget(AActor* InTarget)
@@ -59,6 +61,7 @@ void AWeaponActor::EquippedToTarget(AActor* InTarget)
 
 void AWeaponActor::InitializeWeapon(UWeaponDataAsset* InData)
 {
+	if (!InData) return;
 	WeaponData = InData;
 	Mesh->SetStaticMesh(WeaponData->Mesh.Get());
 	//Mesh->SetRelativeLocation(WeaponData->LocationOffset);
@@ -69,6 +72,12 @@ void AWeaponActor::InitializeWeapon(UWeaponDataAsset* InData)
 
 void AWeaponActor::DropWeapon()
 {
+	IWeaponUserInterface* WeaponUser = Cast<IWeaponUserInterface> (OwnerCharacter);
+	if (WeaponUser)
+	{
+		WeaponUser->GetWeaponAttackStateChangedDelegate().Clear();
+	}
+
 	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
 	DetachFromActor(DetachRules);
 
@@ -85,8 +94,8 @@ void AWeaponActor::DropWeapon()
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	TimerManager.SetTimer(
 		PhysicsDelayTimerHandle,
-		FTimerDelegate::CreateLambda(
-			[this]()
+		FTimerDelegate::CreateWeakLambda(
+			this, [this]()
 			{
 				Mesh->SetCollisionResponseToChannel(ECC_Player, ECollisionResponse::ECR_Block);
 			}
@@ -96,7 +105,10 @@ void AWeaponActor::DropWeapon()
 	);
 
 	//뒤로 던지기
-	FVector BackwardDirection = -OwnerCharacter->GetActorForwardVector();
+	FVector BackwardDirection = FVector::BackwardVector;
+	if (OwnerCharacter.IsValid()) {
+		BackwardDirection = -OwnerCharacter->GetActorForwardVector();
+		}
 	FVector ThrowDirection = BackwardDirection * 300.0f + FVector::UpVector * 200.0f;
 	Mesh->AddImpulse(ThrowDirection, NAME_None, true);
 	FVector AngularImpulse = FVector(
@@ -138,6 +150,8 @@ void AWeaponActor::OnEquipped(AActor* InOwner)
 
 void AWeaponActor::OnHitAreaBeginOverlap(UPrimitiveComponent* InOverlappedComponent, AActor* InOtherActor, UPrimitiveComponent* InOtherComp, int32 InOtherBodyIndex, bool InbFromSweep, const FHitResult& InSweepResult)
 {
+	if (!OwnerCharacter.IsValid()|| !InOtherActor) return;
+
 	float Damage = WeaponData ? WeaponData->Damage : 1;
 
 	UE_LOG(LogTemp, Log, TEXT("오버랩 된 대상 : %s"), *InOtherActor->GetName());
@@ -159,19 +173,19 @@ void AWeaponActor::AttackEnable(bool bEnable)
 
 void AWeaponActor::CountSupplies()
 {
-	if (Count < 3)
-	{
-		Count++;
-	}
-	else if (Count >= 3)
+
+	Count++;
+	
+	if (Count >= MaxCount)
 	{
 		//IWeaponUserInterface::Execute_EquipWeapon(OwnerCharacter.Get(), WeaponData);
 		AActionCharacter* ActionOwner = Cast<AActionCharacter>(OwnerCharacter.Get());
 		if (ActionOwner)
 		{
-			ActionOwner->EquipInitialWeapon();
+			ActionOwner->ReserveInitialWeaponSwap();
 		}
 	}
+	
 }
 
 
