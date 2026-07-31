@@ -47,31 +47,38 @@ void AActionCharacter::EquipWeapon_Implementation(UWeaponDataAsset* InWeaponData
 	{
 		OriginalWeaponData = InWeaponData;
 	}
-
-	//이전 무기 해제
-	if (CurrentWeapon.IsValid())
+	if (InWeaponData == CurrentWeaponData)
 	{
-		CurrentWeapon.Get()->DropWeapon();
-		CurrentWeapon = nullptr;
-	}
-
-
-	//새무기 장비
-	CurrentWeaponData = InWeaponData;
-	if (!CurrentWeaponData->IsLoadCompleted())
-	{
-		CurrentWeaponData->RequestDataLoad(
-			FStreamableDelegate::CreateWeakLambda(this, [this]()
-				{
-					SpawnWeaponActor();
-				})
-		);
+		CurrentWeapon.Get()->Count -= CurrentWeapon.Get()->MaxCount;
 	}
 	else
 	{
-		SpawnWeaponActor();
+
+		//이전 무기 해제
+		if (CurrentWeapon.IsValid())
+		{
+			CurrentWeapon.Get()->DropWeapon();
+			CurrentWeapon = nullptr;
+		}
+
+
+		//새무기 장비
+		CurrentWeaponData = InWeaponData;
+		if (!CurrentWeaponData->IsLoadCompleted())
+		{
+			CurrentWeaponData->RequestDataLoad(
+				FStreamableDelegate::CreateWeakLambda(this, [this]()
+					{
+						SpawnWeaponActor();
+					})
+			);
+		}
+		else
+		{
+			SpawnWeaponActor();
+		}
+		//InWeaponData->Mesh.Get();
 	}
-	//InWeaponData->Mesh.Get();
 }
 
 

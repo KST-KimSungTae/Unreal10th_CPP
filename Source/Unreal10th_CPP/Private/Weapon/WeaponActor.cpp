@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Data/WeaponDataAsset.h"
 #include "Player/ActionCharacter.h"
+#include "Niagaracomponent.h"
 
 // Sets default values
 AWeaponActor::AWeaponActor()
@@ -36,6 +37,9 @@ AWeaponActor::AWeaponActor()
 	//HitArea->SetCollisionResponseToAllChannels(ECR_Ignore);
 	//HitArea->SetCollisionResponseToChannel(ECC_Enemy, ECR_Overlap);
 	HitArea->SetRelativeLocation(FVector(0.0f, 0.0f, 30.0f));
+
+	WeaponTrail = CreateDefaultSubobject< UNiagaraComponent>(TEXT("BladeTrail"));
+	WeaponTrail->SetupAttachment(Mesh);
 
 }
 

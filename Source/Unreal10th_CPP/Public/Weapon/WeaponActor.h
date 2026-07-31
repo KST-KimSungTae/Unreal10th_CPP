@@ -9,6 +9,7 @@
 
 class ACharacter;
 class UCapsuleComponent;
+class UNiagaraComponent;
 UCLASS()
 class UNREAL10TH_CPP_API AWeaponActor : public AActor
 {
@@ -57,6 +58,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UCapsuleComponent>HitArea = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UNiagaraComponent>WeaponTrail = nullptr;
 
 private:
 	//무기를 장비하고 있는 대상
