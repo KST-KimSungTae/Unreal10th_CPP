@@ -138,6 +138,7 @@ protected:
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Stat|Stamina")
 	float AttackCost = 5.0f;
 
+public:
 	//현재 장비중인 무기
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TWeakObjectPtr<AWeaponActor> CurrentWeapon = nullptr;

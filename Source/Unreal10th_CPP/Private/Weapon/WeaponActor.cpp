@@ -57,6 +57,7 @@ void AWeaponActor::BeginPlay()
 	HitArea->OnComponentBeginOverlap.AddDynamic(this, &AWeaponActor::OnHitAreaBeginOverlap);
 	CurrentCount = WeaponData.Get()->UseCount;
 	MaxCount= WeaponData.Get()->UseCount;
+	TrailVFX->Deactivate();
 }
 
 void AWeaponActor::EquippedToTarget(AActor* InTarget)
@@ -171,10 +172,12 @@ void AWeaponActor::AttackEnable(bool bEnable)
 	if (bEnable)
 	{
 		HitArea->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		TrailVFX->Activate(true);
 	}
 	else
 	{
 		HitArea->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		TrailVFX->Deactivate();
 	}
 }
 

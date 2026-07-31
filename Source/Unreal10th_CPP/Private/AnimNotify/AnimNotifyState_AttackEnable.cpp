@@ -3,6 +3,8 @@
 
 #include "AnimNotify/AnimNotifyState_AttackEnable.h"
 #include "Interface/WeaponUserInterface.h"
+#include "Weapon/WeaponActor.h"
+#include "Player/ActionCharacter.h"
 
 void UAnimNotifyState_AttackEnable::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
@@ -18,7 +20,6 @@ void UAnimNotifyState_AttackEnable::NotifyBegin(USkeletalMeshComponent* MeshComp
 void UAnimNotifyState_AttackEnable::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	IWeaponUserInterface* WeaponOwner = Cast<IWeaponUserInterface>(MeshComp->GetOwner());
-
 	if (WeaponOwner)
 	{
 		WeaponOwner->OnWeaponAttackState(false);
