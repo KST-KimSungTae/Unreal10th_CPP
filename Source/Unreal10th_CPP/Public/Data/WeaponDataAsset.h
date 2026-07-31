@@ -8,6 +8,7 @@
 #include "WeaponDataAsset.generated.h"
 
 class UStaticMesh;
+class UNiagaraSystem;
 /**
  * 
  */
@@ -23,7 +24,10 @@ public:
 public:
 	//무기의 메시
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
-	TSoftObjectPtr<UStaticMesh> Mesh;
+	TSoftObjectPtr<USkeletalMesh> Mesh;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
+	TSoftObjectPtr<UNiagaraSystem> TrailVFX;
 
 	//무기가 Attach될 소켓
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")

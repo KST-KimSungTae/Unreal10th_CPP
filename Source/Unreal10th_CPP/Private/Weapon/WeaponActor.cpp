@@ -10,6 +10,7 @@
 #include "Data/WeaponDataAsset.h"
 #include "Player/ActionCharacter.h"
 #include "Niagaracomponent.h"
+#include "NiagaraSystem.h"
 
 // Sets default values
 AWeaponActor::AWeaponActor()
@@ -17,7 +18,7 @@ AWeaponActor::AWeaponActor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RootMesh"));
+	Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RootMesh"));
 	SetRootComponent(Mesh);
 
 	//Mesh->SetCollisionProfileName(TEXT("NoCollision"));	//프로파일을 이용해서 한번에 세팅(실제 적용 타이밍은 좀더 뒤)
@@ -38,8 +39,8 @@ AWeaponActor::AWeaponActor()
 	//HitArea->SetCollisionResponseToChannel(ECC_Enemy, ECR_Overlap);
 	HitArea->SetRelativeLocation(FVector(0.0f, 0.0f, 30.0f));
 
-	WeaponTrail = CreateDefaultSubobject< UNiagaraComponent>(TEXT("BladeTrail"));
-	WeaponTrail->SetupAttachment(Mesh);
+	TrailVFX = CreateDefaultSubobject< UNiagaraComponent>(TEXT("BladeTrail"));
+	TrailVFX->SetupAttachment(Mesh);
 
 }
 
@@ -67,7 +68,8 @@ void AWeaponActor::InitializeWeapon(UWeaponDataAsset* InData)
 {
 	if (!InData) return;
 	WeaponData = InData;
-	Mesh->SetStaticMesh(WeaponData->Mesh.Get());
+	Mesh->SetSkeletalMesh(WeaponData->Mesh.Get());
+	TrailVFX->SetAsset(WeaponData->TrailVFX.Get());
 	//Mesh->SetRelativeLocation(WeaponData->LocationOffset);
 
 	HitArea->SetCapsuleHalfHeight(WeaponData->HitAreaHalfHeight);
@@ -92,6 +94,7 @@ void AWeaponActor::DropWeapon()
 	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	Mesh->SetCollisionResponseToChannel(ECC_Player, ECollisionResponse::ECR_Ignore);
 	Mesh->SetSimulatePhysics(true);
+	
 	HitArea->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	//일정 시간 동안 무기와 플레이어가 충돌 안하게 설정.

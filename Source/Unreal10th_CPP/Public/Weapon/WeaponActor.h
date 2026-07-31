@@ -54,13 +54,13 @@ protected:
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<UStaticMeshComponent>Mesh = nullptr;
+	TObjectPtr<USkeletalMeshComponent>Mesh = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UCapsuleComponent>HitArea = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<UNiagaraComponent>WeaponTrail = nullptr;
+	TObjectPtr<UNiagaraComponent>TrailVFX = nullptr;
 
 private:
 	//무기를 장비하고 있는 대상
@@ -69,6 +69,9 @@ private:
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite)
 	TObjectPtr<UWeaponDataAsset>WeaponData;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly)
+	TSubclassOf<AWeaponActor>BaseWeapon = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite)
 	int32 CurrentCount;

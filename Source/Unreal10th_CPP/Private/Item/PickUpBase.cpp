@@ -18,7 +18,7 @@ APickUpBase::APickUpBase()
 
 
 
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(SphereCollision);
 	Mesh->SetCollisionProfileName("NoCollision");
 

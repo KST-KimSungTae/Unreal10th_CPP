@@ -148,6 +148,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<UWeaponDataAsset> OriginalWeaponData = nullptr;
 
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	TSubclassOf<AWeaponActor> BaseWeaponType = nullptr;*/
 
 protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)

@@ -12,9 +12,9 @@ void APickupWeapon::OnConstruction(const FTransform& Transform)
 	Super::OnConstruction(Transform);
 	if (WeaponData)
 	{
-		if (UStaticMesh* StaticMeshData = WeaponData->Mesh.LoadSynchronous())
+		if (USkeletalMesh* SkeletalMeshData = WeaponData->Mesh.LoadSynchronous())
 		{
-			Mesh->SetStaticMesh(StaticMeshData);
+			Mesh->SetSkeletalMesh(SkeletalMeshData);
 			Mesh->SetRelativeLocation(MeshBaseLocation+WeaponData->LocationOffset);
 		}
 

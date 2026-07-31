@@ -7,7 +7,9 @@
 void UWeaponDataAsset::RequestDataLoad(FStreamableDelegate InDelegate)
 {
 	TArray<FSoftObjectPath> TargetsToLoad;
+
 	TargetsToLoad.Add(Mesh.ToSoftObjectPath());
+	TargetsToLoad.Add(TrailVFX.ToSoftObjectPath());
 
 	FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
 	AsyncLoadHandle = Streamable.RequestAsyncLoad(TargetsToLoad, MoveTemp(InDelegate));
