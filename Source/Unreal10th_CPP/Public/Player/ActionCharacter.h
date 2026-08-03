@@ -7,6 +7,7 @@
 #include "InputActionValue.h"
 #include "../Interface/StatInterface.h"
 #include "Interface/WeaponUserInterface.h"
+#include "../Component/WeaponComponent.h"
 #include "ActionCharacter.generated.h"
 
 
@@ -14,6 +15,7 @@ class UInputAction;
 class USpringArmComponent;
 class UCameraComponent;
 class UStatComponent;
+class UWeaponComponent;
 class UMyAnimNotifyState_SectionJump;
 class AWeaponActor;
 class UWeaponDataAsset;
@@ -38,6 +40,8 @@ public:
 	//Getter & Setter들
 	virtual UStatComponent* GetStatComponent_Implementation() const override;
 
+	virtual UWeaponComponent* GetWeaponComponent_Implementation() const override;
+
 	virtual FOnWeaponAttackStateChanged& GetWeaponAttackStateChangedDelegate() override {
 		return OnOnWeaponAttackStateChanged;
 	};
@@ -57,6 +61,9 @@ public:
 
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+	void AreaAttack();
+
 protected:
 	void OnTestAction(const FInputActionValue& Value);
 
@@ -106,7 +113,6 @@ protected:
 
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Action Anim")
 	TObjectPtr<UAnimMontage> AttackMontage;
-
 
 
 	//구르기에 필요한 스태미너 코스트
@@ -161,6 +167,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UStatComponent>StatComponent = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UWeaponComponent>WeaponComponent = nullptr;
 
 
 private:

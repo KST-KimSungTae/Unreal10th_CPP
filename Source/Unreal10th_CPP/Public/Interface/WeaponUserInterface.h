@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "../Component/WeaponComponent.h"
 #include "WeaponUserInterface.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnWeaponAttackStateChanged, bool, bEnable);
@@ -23,6 +24,9 @@ class UNREAL10TH_CPP_API IWeaponUserInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Weapon")
+	UWeaponComponent* GetWeaponComponent() const;
+
 	virtual void OnWeaponAttackState(bool bEnable) = 0;
 	virtual FOnWeaponAttackStateChanged& GetWeaponAttackStateChangedDelegate() = 0;
 	

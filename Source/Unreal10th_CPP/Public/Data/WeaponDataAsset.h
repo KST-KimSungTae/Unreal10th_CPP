@@ -48,11 +48,24 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "WeaponData")
 	float Damage = 20.0f;
 
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "WeaponData")
+	float AreaDamage = 40.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "WeaponData")
+	float AreaInnerRadius = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "WeaponData")
+	float AreaOutterRadius = 300.0f;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "WeaponData")
 	int32 UseCount = 5;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "WeaponData")
 	bool bInfinityUse = false;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Action Anim")
+	TObjectPtr<UAnimMontage> AttackMontage;
 
 
 protected:

@@ -148,6 +148,13 @@ UStatComponent* AActionCharacter::GetStatComponent_Implementation() const
 	return StatComponent.Get();
 }
 
+UWeaponComponent* AActionCharacter::GetWeaponComponent_Implementation() const
+{
+	return WeaponComponent;
+}
+
+
+
 void AActionCharacter::OnWeaponAttackState(bool bEnable)
 {
 	OnOnWeaponAttackStateChanged.ExecuteIfBound(bEnable);
@@ -175,6 +182,46 @@ float AActionCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 		UE_LOG(LogTemp, Log, TEXT("%f 데미지를 입었습니다.(공격자: %s"),Damage, *InstigatorName);
 	}
 	return Damage;
+}
+
+void AActionCharacter::AreaAttack()
+{
+	if (!CurrentWeapon.IsValid()||!CurrentWeaponData) return;
+
+	DrawDebugSphere(
+		GetWorld(),
+		CurrentWeapon->GetWeaponImpactLocation(),
+		CurrentWeaponData->AreaInnerRadius,
+		12,
+		FColor::Red,
+		false,
+		5.0f
+	);
+
+	DrawDebugSphere(
+		GetWorld(),
+		CurrentWeapon->GetWeaponImpactLocation(),
+		CurrentWeaponData->AreaOutterRadius,
+		12,
+		FColor::Yellow,
+		false,
+		5.0f
+	);
+
+	TArray<AActor*>IgnoreActors = { CurrentWeapon.Get(), this };
+	UGameplayStatics::ApplyRadialDamageWithFalloff(
+		GetWorld(),
+		CurrentWeaponData->AreaDamage,
+		1,
+		CurrentWeapon->GetWeaponImpactLocation(),
+		CurrentWeaponData->AreaInnerRadius,
+		CurrentWeaponData->AreaOutterRadius,
+		1.0f,	//1 일때는 거리에 정비례해서 감소, 0에 가까워 질 때는 위로 볼록한 그래프, 1보다 커질때는 아래로 오목한 그래프
+		nullptr,
+		IgnoreActors,
+		CurrentWeapon.Get(),
+		GetController(),
+		ECC_Enemy);
 }
 
 
@@ -353,6 +400,7 @@ void AActionCharacter::SpawnWeaponActor()
 
 	CurrentWeapon->EquippedToTarget(this);
 }
+
 
 void AActionCharacter::ReserveInitialWeaponSwap()
 {

@@ -34,6 +34,9 @@ public:
 	void DropWeapon();
 
 	void CountSupplies();
+
+	UFUNCTION(BlueprintCallable)
+	FVector GetWeaponImpactLocation() const;
 protected:
 
 	UFUNCTION(BlueprintCallable)

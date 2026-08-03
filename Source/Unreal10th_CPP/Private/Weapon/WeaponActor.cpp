@@ -60,6 +60,11 @@ void AWeaponActor::BeginPlay()
 	TrailVFX->Deactivate();
 }
 
+FVector AWeaponActor::GetWeaponImpactLocation() const
+{
+	return FMath::Lerp(Mesh->GetSocketLocation(TEXT("Tip")), Mesh->GetSocketLocation(TEXT("Base")), 0.5f);
+}
+
 void AWeaponActor::EquippedToTarget(AActor* InTarget)
 {
 	OnEquipped(InTarget);
